@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pixelagent"
+version = "0.1.0"
+description = "A simple agent framework using Pixeltable"
+readme = "README.md"
+authors = [{"name" = "Pixeltable"}]
+license = {"text" = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+]
+dependencies = [
+    "pixeltable>=0.3.0",
+]
+requires-python = ">=3.10"
