@@ -1,6 +1,6 @@
 # Pixel Agent
 
-A framework for building agents using Pixeltable.
+Build-your-own agent framework with Pixeltable.
 
 ## Installation
 
