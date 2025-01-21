@@ -1,11 +1,18 @@
 from typing import Optional, Dict, Any
 from pydantic import BaseModel, Field
 import pixeltable as pxt
-from .model import Model
+from datetime import datetime
+from ..llms import LLMBaseModel
+
+class ChatResponse(BaseModel):
+    user_prompt: str
+    system_prompt: str
+    answer: str
+    timestamp: datetime
 
 class Agent(BaseModel):
     dir_name: str = Field(default="chatbot")
-    model: Model
+    model: LLMBaseModel
     table: Optional[pxt.Table] = None
     system_prompt: Optional[str] = None
     
@@ -22,15 +29,16 @@ class Agent(BaseModel):
         table = pxt.create_table(
             path_str=f"{self.dir_name}.conversation",
             schema_or_df={
-                "prompt": pxt.String,
-                "system_prompt": pxt.String
+                "user_prompt": pxt.String,
+                "system_prompt": pxt.String,
+                "timestamp": pxt.Timestamp,
             },
             if_exists="ignore",
         )
-        
+       
         # Add computed columns using model-specific formatting
         table.add_computed_column(
-            messages=self.model.format_messages(table.prompt, table.system_prompt),
+            messages=self.model.format_messages(table.user_prompt, table.system_prompt),
             if_exists="ignore"
         )
         
@@ -54,14 +62,24 @@ class Agent(BaseModel):
         
         return table
     
-    def run(self, prompt: str) -> str:
+    def run(self, prompt: str) -> ChatResponse:
         """Send a query and get response"""
         self.table.insert([{
-            "prompt": prompt,
-            "system_prompt": self.system_prompt or ""  # Use empty string if no system prompt
+            "user_prompt": prompt,
+            "system_prompt": self.system_prompt or "",  # Use empty string if no system prompt
+            "timestamp": datetime.now()
         }])
-        result = self.table.select(
-            self.table.prompt, 
-            self.table.answer
-        ).collect()
-        return result[-1]['answer']
+        result = self.table.order_by(self.table.timestamp, asc=False).select(
+            self.table.user_prompt,
+            self.table.system_prompt,
+            self.table.answer,
+            self.table.timestamp
+        ).limit(1).collect()
+        
+        # Convert the first row of the result to a dictionary and create ChatResponse
+        return ChatResponse(
+            user_prompt=result[0, "user_prompt"],
+            system_prompt=result[0, "system_prompt"],
+            answer=result[0, "answer"],
+            timestamp=result[0, "timestamp"]
+        )

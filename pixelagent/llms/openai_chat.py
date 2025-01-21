@@ -1,8 +1,9 @@
 from typing import List, Dict, Any, Callable, Optional
-from pydantic import BaseModel, Field
+from pydantic import  Field
 from pixeltable.functions import openai
+from .base import LLMBaseModel
 
-class Model(BaseModel):
+class OpenAIModel(LLMBaseModel):
     """Model class for handling OpenAI chat completions with Pixeltable."""
     
     model_name: str = Field(default="gpt-4")
