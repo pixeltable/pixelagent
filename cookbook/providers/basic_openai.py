@@ -1,17 +1,23 @@
-from pixelagent import Agent
-from pixelagent.llms import OpenAIModel
+# pip install openai
 
-# Initialize the model and agent
-model = OpenAIModel(model_name="gpt-4o-mini")
-agent = Agent(model=model, system_prompt="You are a helpful assistant with a thick southern accent.")
+from pxl.agent import Agent
+from pxl.providers import Model
 
-# Test it
-response = agent.run("Hello")
-# Print the full conversation details
-print("\nConversation Details:")
-print("-" * 50)
-print(f"Timestamp: {response.timestamp}")
-print(f"\nSystem Prompt: {response.system_prompt}")
-print(f"User Message: {response.user_prompt}")
-print(f"\nAssistant's Response:\n{response.answer}")
-print("-" * 50)
+# Create Agent
+llm = Model(provider="openai", model_name="gpt-4o-mini")
+agent = Agent(
+    model=llm,
+    agent_name="Dog Trainer",
+    system_prompt="You specialize in training dogs",
+    # clear_cache=True,
+)
+
+
+# Get answer
+result = agent.run("in 5 words tell me how to train my dog to sit")
+print(result)
+
+# Inspect agent history
+inspect = agent.get_history()
+df = inspect.collect().to_pandas()
+print(df.head())
