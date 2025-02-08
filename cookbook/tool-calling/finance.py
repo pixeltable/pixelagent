@@ -24,7 +24,10 @@ openai_agent.init(
 
 report = openai_agent.run(
     agent_name="Financial_analyst",
-    message="Fetch the latest stock information for Factset (Ticker: FDS), and create a 100 summary of the company as a financial report in markdown format.",
+    message="""
+    Fetch the latest stock information for Factset (Ticker: FDS). 
+    Then create a 100 summary of the company as a financial report in markdown format.
+    """,
 )
 
 # inspect

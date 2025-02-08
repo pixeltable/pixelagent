@@ -1,5 +1,3 @@
-import pixeltable as pxt
-
 from pxl.providers import openai_agent
 
 # Initialize the dog trainer agent
