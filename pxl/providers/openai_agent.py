@@ -1,19 +1,28 @@
+import logging
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
 import pixeltable as pxt
 from pixeltable.functions import openai
-from typing import List, Dict, Optional, Any
-import logging
-
-from .utils import (
-    setup_logger,
-    batch_inject_messages,
-    create_messages_with_history,
-    create_search_tool,
-    tool_result_prompt,
-)
 
 logger = logging.getLogger("OpenAIAgent")
 logger.setLevel(logging.DEBUG)
+
+
+def setup_logger(agent_name: str, verbose: bool = False) -> logging.Logger:
+    """Set up logging for an agent."""
+    logger = logging.getLogger(f"OpenAIAgent.{agent_name}")
+    logger.setLevel(logging.DEBUG if verbose else logging.WARNING)
+    if not logger.handlers:
+        console_handler = logging.StreamHandler()
+        formatter = logging.Formatter(
+            "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
+        console_handler.setFormatter(formatter)
+        logger.addHandler(console_handler)
+    return logger
+
 
 def init(
     agent_name: str,
@@ -112,6 +121,69 @@ def run(
     return response
 
 
+def create_search_tool(index=None):
+    """Create a search tool that can be used by the agent.
+
+    Args:
+        index: Optional pixeltable index containing the data. If None, no search tool will be created.
+
+    Returns:
+        A pixeltable tool for searching data, or None if no index provided
+    """
+    if index is None:
+        return None
+
+    @pxt.query
+    def search(query_text: str) -> str:
+        """Search tool to find relevant passages.
+
+        Args:
+            query_text: The search query
+        Returns:
+            Top 10 most relevant passages
+        """
+        similarity = index.text.similarity(query_text)
+        return (
+            index.order_by(similarity, asc=False)
+            .select(index.text, sim=similarity)
+            .limit(10)
+        )
+
+    return pxt.tools(search)
+
+
+# Create messages with history
+@pxt.udf
+def create_messages_with_history(
+    past_context: List[Dict],
+    system_prompt: str,
+    current_prompt: str,
+    injected_messages: List[Dict] = None,
+) -> List[Dict]:
+    """Create messages with history and optional injected messages.
+
+    Args:
+        past_context: Previous conversation history
+        system_prompt: The system prompt
+        current_prompt: Current user prompt
+        injected_messages: Optional list of messages to inject before the current prompt
+
+    Returns:
+        List of messages including system prompt, history, injected messages, and current prompt
+    """
+    messages = [{"role": "system", "content": system_prompt}]
+    messages.extend(
+        [{"role": msg["role"], "content": msg["content"]} for msg in past_context]
+    )
+
+    # Insert injected messages if provided
+    if injected_messages:
+        messages.extend(injected_messages)
+
+    messages.append({"role": "user", "content": current_prompt})
+    return messages
+
+
 def setup_agent_table(
     agent_table: pxt.Table,
     agent_tools: pxt.tools,
@@ -129,7 +201,7 @@ def setup_agent_table(
         model_name: Name of the model to use
     """
 
-    # Query to get message history
+    # Query to get recent message history
     @pxt.query
     def fetch_messages():
         return (
@@ -164,7 +236,7 @@ def setup_agent_table(
         )
 
         agent_table.add_computed_column(
-            interpret_tool_result=tool_result_prompt(
+            interpret_tool_result=create_prompt(
                 agent_table.prompt, agent_table.tool_result
             )
         )
@@ -173,7 +245,7 @@ def setup_agent_table(
         result_messages = [
             {
                 "role": "system",
-                "content": system_prompt,
+                "content": "Answer the user's question from the tool result.",
             },
             {"role": "user", "content": agent_table.interpret_tool_result},
         ]
@@ -190,3 +262,55 @@ def setup_agent_table(
     agent_table.add_computed_column(
         answer=agent_table.final_response.choices[0].message.content
     )
+
+
+@pxt.udf
+def create_prompt(question: str, tool_result: list[dict]) -> str:
+    """Create a prompt combining the question and search results.
+
+    Args:
+        question: The user's question
+        tool_result: Results from the search tool
+
+    Returns:
+        A formatted prompt string
+    """
+    return f"""
+    QUESTION:
+    {question}
+    
+    TOOL RESULT:
+    {tool_result}
+    """
+
+
+def batch_inject_messages(messages_table, messages_to_inject: List[Dict]):
+    """Inject multiple messages into the conversation history at once.
+
+    Args:
+        messages_to_inject: List of message dictionaries with 'role' and 'content' keys
+    """
+    # Validate message format
+    for msg in messages_to_inject:
+        if not all(key in msg for key in ["role", "content"]):
+            raise ValueError("Each message must have 'role' and 'content' keys")
+
+    # Insert all messages with current timestamp
+    current_time = datetime.now()
+    messages_table.insert(
+        [
+            {"role": msg["role"], "content": msg["content"], "timestamp": current_time}
+            for msg in messages_to_inject
+        ]
+    )
+
+
+def get_messages(agent_name: str) -> List[Dict]:
+    """Get the messages for an agent.
+
+    Args:
+        agent_name: The name of the agent
+    """
+    df = pxt.get_table(f"{agent_name}_messages").collect()
+    msgs = [{"role": row["role"], "content": row["content"]} for row in df]
+    return msgs

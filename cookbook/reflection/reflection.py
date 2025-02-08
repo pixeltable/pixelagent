@@ -1,6 +1,6 @@
+import pixeltable as pxt
 import yfinance as yf
 
-import pixeltable as pxt
 from pxl.providers import openai_agent
 
 

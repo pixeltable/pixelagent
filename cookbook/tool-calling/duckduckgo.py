@@ -1,8 +1,8 @@
 # pip install pixeltable openai duckduckgo-search
 import pixeltable as pxt
-from pxl.providers import openai_agent
-
 from duckduckgo_search import DDGS
+
+from pxl.providers import openai_agent
 
 
 @pxt.udf
