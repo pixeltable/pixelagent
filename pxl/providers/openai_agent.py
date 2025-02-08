@@ -21,7 +21,7 @@ def setup_logger(agent_name: str, verbose: bool = False) -> logging.Logger:
         logger.addHandler(console_handler)
     return logger
 
-def initialize_agent(
+def init(
     agent_name: str,
     system_prompt: str,
     model_name: str = "gpt-4o-mini",
@@ -31,7 +31,7 @@ def initialize_agent(
     verbose: bool = False
 ) -> None:
     """Initialize or get existing agent tables."""
-    agent_name = agent_name.replace(" ", "_")
+
     logger = setup_logger(agent_name, verbose)
     
     logger.debug(f"Initializing tables for agent: {agent_name}")
@@ -75,9 +75,10 @@ def initialize_agent(
         
         setup_agent_table(agent_table, tools, system_prompt, messages_table, model_name)
 
-def run_agent(agent_name: str, message: str, additional_context: Optional[List[Dict]] = None) -> str:
+def run(agent_name: str, message: str, additional_context: Optional[List[Dict]] = None) -> str:
     """Run the agent with optional message injection."""
-    agent_name = agent_name.replace(" ", "_")
+    
+
     logger.info(f"Processing message: '{message[:50]}{'...' if len(message) > 50 else ''}'")
 
     # Get the latest tables
@@ -242,7 +243,7 @@ def create_prompt(question: str, tool_result: list[dict]) -> str:
     QUESTION:
     {question}
     
-    SEARCH TOOL RESULT:
+    TOOL RESULT:
     {tool_result}
     """
 

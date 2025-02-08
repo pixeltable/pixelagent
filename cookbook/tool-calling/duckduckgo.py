@@ -1,11 +1,12 @@
 # pip install pixeltable openai duckduckgo-search
 import pixeltable as pxt
-from pxl.agent import initialize_agent, run_agent
+from pxl.providers import openai_agent
 
 from duckduckgo_search import DDGS
 
 @pxt.udf
 def search_news(keywords: str, max_results: int = 20) -> str:
+
     """Search news using DuckDuckGo and return results."""
     try:
         with DDGS() as ddgs:
@@ -25,17 +26,21 @@ def search_news(keywords: str, max_results: int = 20) -> str:
         return f'Search failed: {str(e)}'
 
 # Initialize the web research agent
-initialize_agent(
+openai_agent.init(
     agent_name="Web_Research_Agent",
     system_prompt="You are a web research agent, who can access web search data. Help the user with their research.",
     model_name="gpt-4o-mini",
     verbose=True,
     agent_tools=pxt.tools(search_news),
+
     reset_memory=False  # set to true to delete the agent and start fresh
 )
 
 # Run the agent
-response = run_agent("Web_Research_Agent", "Who is playing in the superbowl?")
+response = openai_agent.run(
+    agent_name="Web_Research_Agent",
+    message="Who is playing in the superbowl?"
+)
 print(response)
 
 

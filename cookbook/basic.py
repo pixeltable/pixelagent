@@ -1,7 +1,7 @@
-from pxl.agent import initialize_agent, run_agent
+from pxl.providers import openai_agent
 
 # Initialize the dog trainer agent
-initialize_agent(
+openai_agent.init(
     agent_name="Dog_Trainer",
     system_prompt="You specialize in training dogs",
     model_name="gpt-4o-mini",
@@ -9,6 +9,10 @@ initialize_agent(
 )
 
 # Run the agent
-result = run_agent("Dog_Trainer", "in 5 words tell me how to train my dog to sit")
+result = openai_agent.run(
+    agent_name="Dog_Trainer",
+    message="in 5 words tell me how to train my dog to sit"
+)
+
 
 print(result)
