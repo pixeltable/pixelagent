@@ -1,3 +1,4 @@
+import pixeltable as pxt
 from pxl.providers import openai_agent
 
 # Initialize the dog trainer agent
@@ -10,9 +11,6 @@ openai_agent.init(
 
 # Run the agent
 result = openai_agent.run(
-    agent_name="Dog_Trainer",
-    message="in 5 words tell me how to train my dog to sit"
+    agent_name="Dog_Trainer", message="in 5 words tell me how to train my dog to sit"
 )
-
-
 print(result)
