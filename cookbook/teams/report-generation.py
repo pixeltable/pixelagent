@@ -28,8 +28,7 @@ initialize_agent(
     agent_name="Portfolio_Manager",
     system_prompt="""
     You are a portfolio manager use your financial analyst to help you manage the portfolio.
-    You have access to a financial analyst who can help you with your research.
-    Be sure to give the financial analyst a good amount of detail. Dont be afraid to ask for more information.
+    You have access to a financial analyst who can help you with your research. Use at your discretion.
     """,
     model_name="gpt-4o-mini",
     agent_tools=pxt.tools(analyst),
