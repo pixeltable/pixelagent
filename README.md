@@ -2,28 +2,54 @@
 
 Build-your-own agent framework with Pixeltable.
 
+
+## Why Pixeltable?
+
+Pixeltable is a multimodal data infrastructure for building AI applications.
+
+Pixelagent is a demonstration of the power of Pixeltable to build an agentic framework.
+
+## Installation
+
+```bash
+pip install pixelagent openai
+```
+
 ## Usage
 
 ```python
-from pxl.agent import Agent
-from pxl.providers import Model
+from pxl.providers import openai_agent
 
-# Create Agent
-llm = Model(provider="openai", model_name="gpt-4o-mini")
-agent = Agent(
-    model=llm,
-    agent_name="Dog Trainer",
-    system_prompt="You specialize in training dogs",
-    # clear_cache=True,
+import yfinance as yf
+
+@pxt.udf
+def stock_info(ticker: str) -> Optional[dict]:
+    """Get stock info for a given ticker symbol."""
+    stock = yf.Ticker(ticker)
+    return stock.info
+
+# Persistent Agent with memory and tools
+openai_agent.init(
+    agent_name="Financial_Analyst",
+    system_prompt="You are a financial analyst at a large NYC hedgefund.",
+    model_name="gpt-4o-mini",
+    agent_tools=pxt.tools(stock_info),
+    reset_memory=False,
 )
 
+# Run the agent
+result = openai_agent.run(
+    agent_name="Financial_Analyst",
+    message="""
+    Fetch the latest stock information for Factset (Ticker: FDS).
+    Create a 100 word summary of the company as a financial report in markdown format.
+    """
+)
 
-# Get answer
-result = agent.run("in 5 words tell me how to train my dog to sit")
 print(result)
 
 # Inspect agent history
-inspect = agent.get_history()
+inspect = pxt.get_table("Financial_Analyst")
 df = inspect.collect().to_pandas()
 print(df.head())
 ```
