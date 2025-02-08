@@ -1,11 +1,11 @@
-from pxl.providers import openai_agent
+from pxl.agent import openai_agent
 
 # Initialize the dog trainer agent
 openai_agent.init(
     agent_name="Dog_Trainer",
     system_prompt="You specialize in training dogs",
     model_name="gpt-4o-mini",
-    reset_memory=False,
+    reset_memory=True,
 )
 
 # Run the agent

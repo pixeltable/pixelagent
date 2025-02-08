@@ -2,7 +2,7 @@
 import pixeltable as pxt
 from duckduckgo_search import DDGS
 
-from pxl.providers import openai_agent
+from pxl.agent import openai_agent
 
 
 @pxt.udf

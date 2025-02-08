@@ -3,7 +3,7 @@ from typing import Optional
 import pixeltable as pxt
 import yfinance as yf
 
-from pxl.providers import openai_agent
+from pxl.agent import openai_agent
 
 
 @pxt.udf
@@ -25,7 +25,7 @@ openai_agent.init(
     system_prompt="You are a financial analyst at a large NYC hedgefund.",
     model_name="gpt-4o-mini",
     agent_tools=pxt.tools(stock_info),
-    reset_memory=True,  # set to true to delete the agent and start fresh
+    reset_memory=False,  # set to true to delete the agent and start fresh
 )
 
 # Initialize the portfolio manager agent
@@ -38,7 +38,7 @@ openai_agent.init(
     """,
     model_name="gpt-4o-mini",
     agent_tools=pxt.tools(analyst),
-    reset_memory=True,  # set to true to delete the agent and start fresh
+    reset_memory=False,  # set to true to delete the agent and start fresh
 )
 
 # Run the portfolio manager agent

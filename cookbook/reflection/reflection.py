@@ -1,7 +1,7 @@
 import pixeltable as pxt
 import yfinance as yf
 
-from pxl.providers import openai_agent
+from pxl.agent import openai_agent
 
 
 @pxt.udf
@@ -17,7 +17,7 @@ openai_agent.init(
     system_prompt="You are a financial analyst, who can access yahoo finance data. Help the user with their stock analysis.",
     model_name="gpt-4o-mini",
     agent_tools=pxt.tools(stock_info),
-    reset_memory=False,  # set to true to delete the agent and start fresh
+    reset_memory=False,  # set to true to delete the agent history and start fresh
 )
 
 openai_agent.init(
@@ -28,7 +28,7 @@ openai_agent.init(
     """,
     model_name="gpt-4o-mini",
     agent_tools=pxt.tools(stock_info),
-    reset_memory=False,  # set to true to delete the agent and start fresh
+    reset_memory=False,  # set to true to delete the agent history and start fresh
 )
 
 # Run initial report

@@ -3,7 +3,7 @@ from typing import Optional
 import pixeltable as pxt
 import yfinance as yf
 
-from pxl.providers import openai_agent
+from pxl.agent import openai_agent
 
 
 @pxt.udf
