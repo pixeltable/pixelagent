@@ -5,18 +5,17 @@ from pixeltable.iterators.string import StringSplitter
 
 from pxl.agent import openai_agent
 
-
 DIRECTORY = 'audio_index'
 TABLE_NAME = f'{DIRECTORY}.audio'
 VIEW_NAME = f'{DIRECTORY}.audio_sentence_chunks'
-DELETE_INDEX = False
+DELETE_INDEX = True
 
 if DELETE_INDEX:
     pxt.drop_table(TABLE_NAME, force=True)
 
 if TABLE_NAME not in pxt.list_tables():
     # Create audio table
-    pxt.create_dir(DIRECTORY)
+    pxt.create_dir(DIRECTORY, if_exists='ignore')
     audio_index = pxt.create_table(TABLE_NAME, {'audio_file': pxt.Audio})
 
     # Create audio-to-text column
@@ -37,23 +36,42 @@ if TABLE_NAME not in pxt.list_tables():
 
 else:
     audio_index = pxt.get_table(TABLE_NAME)
-
+    sentences_view = pxt.get_table(VIEW_NAME)
 
 # Add data to the table
 audio_index.insert([{'audio_file': 's3://pixeltable-public/audio/10-minute tour of Pixeltable.mp3'}])
 
-# Create a new agent
 
-# Initialize the dog trainer agent
+# Create search tool
+@pxt.query
+def search(query_text: str) -> str:
+    """Search tool to find relevant passages.
+
+    Args:
+        query_text: The search query
+    Returns:
+        Top 10 most relevant passages
+    """
+    similarity = sentences_view.text.similarity(query_text)
+    return (
+        sentences_view.order_by(similarity, asc=False)
+        .select(sentences_view.text, sim=similarity)
+        .limit(10)
+    )
+
+
+# Create search agent
 openai_agent.init(
-    agent_name="Dog_Trainer",
-    system_prompt="You specialize in training dogs",
+    agent_name="Audio_Search",
+    system_prompt="Use your tools to search the audio index",
     model_name="gpt-4o-mini",
-    reset_memory=False,
+    reset_memory=True,
+    agent_tools=pxt.tools(search),
 )
 
 # Run the agent
 result = openai_agent.run(
-    agent_name="Dog_Trainer", message="in 5 words tell me how to train my dog to sit"
+    agent_name="Audio_Search", message="What is Pixeltable?"
 )
+
 print(result)
