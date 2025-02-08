@@ -21,11 +21,7 @@ initialize_agent(
 @pxt.udf
 def analyst(prompt: str) -> str:
     """Get stock info for a given ticker symbol."""
-    response = run_agent(
-        agent_name="Financial_Analyst",
-        message=prompt
-    )
-    return response
+    return run_agent("Financial_Analyst", prompt)
 
 # Initialize the portfolio manager agent
 initialize_agent(
@@ -62,7 +58,7 @@ for section in sections:
 
 final_report = run_agent(
     agent_name="Portfolio_Manager",
-    message="Great work. Finalize your report and make sure you follow your structure:" + ",".join(sections)
+    message="Finalize the report. Place your report in these brackets: <REPORT> </REPORT>"
 )
 
 
