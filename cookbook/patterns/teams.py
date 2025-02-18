@@ -17,9 +17,9 @@ def get_price_history(ticker: str, period: str = '1mo') -> Dict:
     stock = yf.Ticker(ticker)
     history = stock.history(period=period)
     return {
-        'latest_price': float(history['Close'][-1]),
-        'price_change': float(history['Close'][-1] - history['Close'][0]),
-        'price_change_percent': float((history['Close'][-1] - history['Close'][0]) / history['Close'][0] * 100),
+        'latest_price': float(history['Close'].iloc[-1]),
+        'price_change': float(history['Close'].iloc[-1] - history['Close'].iloc[0]),
+        'price_change_percent': float((history['Close'].iloc[-1] - history['Close'].iloc[0]) / history['Close'].iloc[0] * 100),
         'average_volume': float(history['Volume'].mean())
     }
 
@@ -40,20 +40,25 @@ yfinance_tools = pxt.tools(
 )
 
 # Create agent with YFinance tools
-agent = Agent(
+analyst = Agent(
     name="yfinance_analyst", 
     system_prompt="You are a financial analyst, who can access yahoo finance data. Help the user with their stock analysis.", 
-    tools=yfinance_tools
+    tools=yfinance_tools,
+    reset=True
 )
 
-# Example analysis
-query = """Analyze NVIDIA (NVDA) stock:
-1. Current price and recent performance
-2. Analyst recommendations
-Provide a brief investment summary."""
+@pxt.udf
+def ask_analyst(query: str) -> str:
+    """State your query to the analyst and get a response."""
+    return analyst.run(query)
 
-response = agent.run(query)
-print("\nQuery:")
-print(query)
+portfolio_manager = Agent(
+    name="portfolio_manager", 
+    system_prompt="Work with your analyst to build a report on stocks in your portfolio.", 
+    tools=pxt.tools(ask_analyst),
+    reset=True
+)
+
+response = portfolio_manager.run("I need a exhaustive report on PLTR stock. Make sure to include all the details.")
 print("\nAnalysis:")
 print(response)

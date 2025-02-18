@@ -1,9 +1,9 @@
 # pip install pixeltable openai duckduckgo-search
+
 import pixeltable as pxt
+from pixelagent.openai import Agent
+
 from duckduckgo_search import DDGS
-
-from pxl.agent import openai_agent
-
 
 @pxt.udf
 def search_news(keywords: str, max_results: int = 20) -> str:
@@ -29,19 +29,21 @@ def search_news(keywords: str, max_results: int = 20) -> str:
     except Exception as e:
         return f"Search failed: {str(e)}"
 
+# Create tools collection
+ddg_tools = pxt.tools(search_news)
 
-# Initialize the web research agent
-openai_agent.init(
-    agent_name="Web_Research_Agent",
+# Create agent with DuckDuckGo tools
+agent = Agent(
+    name="web_research_agent",
     system_prompt="You are a web research agent, who can access web search data. Help the user with their research.",
-    model_name="gpt-4o-mini",
-    verbose=True,
-    agent_tools=pxt.tools(search_news),
-    reset_memory=False,  # set to true to delete the agent and start fresh
+    tools=ddg_tools
 )
 
-# Run the agent
-response = openai_agent.run(
-    agent_name="Web_Research_Agent", message="Who is playing in the superbowl?"
-)
+# Example research
+query = "Who is playing in the Super Bowl?"
+
+response = agent.run(query)
+print("\nQuery:")
+print(query)
+print("\nAnalysis:")
 print(response)

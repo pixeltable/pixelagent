@@ -3,11 +3,11 @@ from pixeltable.functions import whisper
 from pixeltable.functions.huggingface import sentence_transformer
 from pixeltable.iterators.string import StringSplitter
 
-from pxl.agent import openai_agent
+from pixelagent.openai import agent
 
-DIRECTORY = 'audio_index'
-TABLE_NAME = f'{DIRECTORY}.audio'
-VIEW_NAME = f'{DIRECTORY}.audio_sentence_chunks'
+DIRECTORY = "audio_index"
+TABLE_NAME = f"{DIRECTORY}.audio"
+VIEW_NAME = f"{DIRECTORY}.audio_sentence_chunks"
 DELETE_INDEX = True
 
 if DELETE_INDEX:
@@ -15,31 +15,37 @@ if DELETE_INDEX:
 
 if TABLE_NAME not in pxt.list_tables():
     # Create audio table
-    pxt.create_dir(DIRECTORY, if_exists='ignore')
-    audio_index = pxt.create_table(TABLE_NAME, {'audio_file': pxt.Audio})
+    pxt.create_dir(DIRECTORY, if_exists="ignore")
+    audio_index = pxt.create_table(TABLE_NAME, {"audio_file": pxt.Audio})
 
     # Create audio-to-text column
-    audio_index.add_computed_column(transcription=whisper.transcribe(audio=audio_index.audio_file, model='base.en'))
+    audio_index.add_computed_column(
+        transcription=whisper.transcribe(audio=audio_index.audio_file, model="base.en")
+    )
 
     # Create view that chunks text into sentences
     sentences_view = pxt.create_view(
         VIEW_NAME,
         audio_index,
-        iterator=StringSplitter.create(text=audio_index.transcription.text, separators='sentence'),
+        iterator=StringSplitter.create(
+            text=audio_index.transcription.text, separators="sentence"
+        ),
     )
 
     # Define the embedding model
-    embed_model = sentence_transformer.using(model_id='intfloat/e5-large-v2')
+    embed_model = sentence_transformer.using(model_id="intfloat/e5-large-v2")
 
     # Create embedding index
-    sentences_view.add_embedding_index(column='text', string_embed=embed_model)
+    sentences_view.add_embedding_index(column="text", string_embed=embed_model)
 
 else:
     audio_index = pxt.get_table(TABLE_NAME)
     sentences_view = pxt.get_table(VIEW_NAME)
 
 # Add data to the table
-audio_index.insert([{'audio_file': 's3://pixeltable-public/audio/10-minute tour of Pixeltable.mp3'}])
+audio_index.insert(
+    [{"audio_file": "s3://pixeltable-public/audio/10-minute tour of Pixeltable.mp3"}]
+)
 
 
 # Create search tool
@@ -61,7 +67,7 @@ def search(query_text: str) -> str:
 
 
 # Create search agent
-openai_agent.init(
+agent.init(
     agent_name="Audio_Search",
     system_prompt="Use your tools to search the audio index",
     model_name="gpt-4o-mini",
@@ -70,8 +76,6 @@ openai_agent.init(
 )
 
 # Run the agent
-result = openai_agent.run(
-    agent_name="Audio_Search", message="What is Pixeltable?"
-)
+result = agent.run(agent_name="Audio_Search", message="What is Pixeltable?")
 
 print(result)

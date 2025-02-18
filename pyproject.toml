@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pixelagent"
 version = "0.1.0"
-description = "A agent framework built on Pixeltable"
+description = "An agentic framework built on Pixeltable"
 readme = "README.md"
 authors = [{"name" = "Pixeltable"}]
 license = {"text" = "MIT"}
@@ -14,7 +14,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
 ]
 dependencies = [
-    "pixeltable==0.3.0",
+    "pixeltable",
     "pydantic>=2.0.0",
 ]
 requires-python = ">=3.10"
