@@ -35,15 +35,9 @@ ddg_tools = pxt.tools(search_news)
 # Create agent with DuckDuckGo tools
 agent = Agent(
     name="web_research_agent",
-    system_prompt="You are a web research agent, who can access web search data. Help the user with their research.",
-    tools=ddg_tools
+    model="gpt-4o-mini",
+    system_prompt="speak in a heavy southern accent"
 )
 
-# Example research
-query = "Who is playing in the Super Bowl?"
-
-response = agent.run(query)
-print("\nQuery:")
-print(query)
-print("\nAnalysis:")
-print(response)
+res = agent.run("write a technical paper (less than 100 words) about the history of the internet")
+print(res)

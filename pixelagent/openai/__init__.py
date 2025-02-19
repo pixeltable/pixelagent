@@ -1,5 +1,5 @@
 from typing import Dict, List, Optional
-
+from datetime import datetime
 import pixeltable as pxt
 from pixeltable.functions import openai
 
@@ -106,13 +106,29 @@ def run(name: str, instructions: str, content: str) -> str:
 
 class Agent:
     """Base agent class that can be composed into workflows"""
-    def __init__(self, name: str, system_prompt: str, model: str = "gpt-4o-mini", tools: Optional[pxt.tools] = None, reset: bool = False):
+    def __init__(self, name: str, system_prompt: str, model: str = "gpt-4"):
         self.name = name
         self.system_prompt = system_prompt
         self.model = model
-        self.tools = tools
-        if reset:
-            create_chat(name, model, tools)
+        create_chat(name, model)
         
     def run(self, content: str) -> str:
         return run(self.name, self.system_prompt, content)
+
+
+# Example usage:
+# # Create agents
+# writer = Agent("writer", "You are an expert writer. Write clear, concise responses.")
+# critic = Agent("critic", "You are a critical editor. Evaluate writing for clarity and accuracy.")
+# 
+# # Setup reflection workflow
+# reflection = IterativeReflection(writer, critic, max_iterations=3)
+# final_text = reflection.run("Explain quantum computing")
+# 
+# # Setup planning workflow
+# planner = Agent("planner", "You are a strategic planner. Break down tasks into clear steps.")
+# executor = Agent("executor", "You are an implementation expert. Execute plans precisely.")
+# validator = Agent("validator", "You are a QA expert. Validate results against requirements.")
+# 
+# planning = CollaborativePlanning(planner, executor, validator)
+# result = planning.run("Create a marketing strategy for a new product")
