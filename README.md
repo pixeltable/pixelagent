@@ -7,7 +7,8 @@ Build-your-own agent framework with Pixeltable.
 
 Pixeltable is a multimodal data infrastructure for building AI applications.
 
-Pixelagent is a demonstration of the power of Pixeltable to build an agentic framework.
+
+Pixeltable gives memory, knowledge, and tools to agents.
 
 ## Installation
 
@@ -18,38 +19,64 @@ pip install pixelagent openai
 ## Usage
 
 ```python
-from pxl.providers import openai_agent
+from typing import Dict, List
+
+import pixeltable as pxt
+from pixelagent.openai import Agent
 
 import yfinance as yf
 
 @pxt.udf
-def stock_info(ticker: str) -> Optional[dict]:
-    """Get stock info for a given ticker symbol."""
+def get_stock_info(ticker: str) -> Dict:
+    """Get basic information about a stock."""
     stock = yf.Ticker(ticker)
     return stock.info
 
-# Persistent Agent with memory and tools
-openai_agent.init(
-    agent_name="Financial_Analyst",
-    system_prompt="You are a financial analyst at a large NYC hedgefund.",
-    model_name="gpt-4o-mini",
-    agent_tools=pxt.tools(stock_info),
-    reset_memory=False,
+@pxt.udf
+def get_price_history(ticker: str, period: str = '1mo') -> Dict:
+    """Get historical price data for a stock."""
+    stock = yf.Ticker(ticker)
+    history = stock.history(period=period)
+    return {
+        'latest_price': float(history['Close'][-1]),
+        'price_change': float(history['Close'][-1] - history['Close'][0]),
+        'price_change_percent': float((history['Close'][-1] - history['Close'][0]) / history['Close'][0] * 100),
+        'average_volume': float(history['Volume'].mean())
+    }
+
+@pxt.udf
+def get_recommendations(ticker: str) -> List[Dict]:
+    """Get recent analyst recommendations."""
+    stock = yf.Ticker(ticker)
+    recs = stock.recommendations
+    if recs is not None:
+        return recs.tail(5).to_dict('records')
+    return []
+
+# Create tools collection
+yfinance_tools = pxt.tools(
+    get_stock_info,
+    get_price_history,
+    get_recommendations
 )
 
-# Run the agent
-result = openai_agent.run(
-    agent_name="Financial_Analyst",
-    message="""
-    Fetch the latest stock information for Factset (Ticker: FDS).
-    Create a 100 word summary of the company as a financial report in markdown format.
-    """
+# Create agent with YFinance tools
+agent = Agent(
+    name="yfinance_analyst", 
+    system_prompt="You are a financial analyst, who can access yahoo finance data. Help the user with their stock analysis.", 
+    tools=yfinance_tools,
+    reset=True
 )
 
-print(result)
+# Example analysis
+query = """Analyze NVIDIA (NVDA) stock:
+1. Current price and recent performance
+2. Analyst recommendations
+Provide a brief investment summary."""
 
-# Inspect agent history
-inspect = pxt.get_table("Financial_Analyst")
-df = inspect.collect().to_pandas()
-print(df.head())
+response = agent.run(query)
+print("\nQuery:")
+print(query)
+print("\nAnalysis:")
+print(response)
 ```
