@@ -4,22 +4,13 @@ import pixeltable as pxt
 from pixeltable.functions import openai
 
 @pxt.udf
-def _create_messages(past_context: List[Dict], system_prompt: str) -> List[Dict]:
+def _create_messages(past_context: List[Dict], system_prompt: str, tool_output: Optional[str] = None) -> List[Dict]:
     """Create messages list with system prompt, memory context and new message"""
     messages = [{'role': 'system', 'content': system_prompt}]
     messages.extend([{'role': msg['role'], 'content': msg['content']} for msg in past_context])
+    if tool_output:
+        messages.append({'role': 'user', 'content': str(tool_output)})
     return messages
-
-@pxt.udf
-def _create_tool_prompt(question: str, tool_outputs: list[dict]) -> str:
-    """Create a prompt that includes tool outputs"""
-    return f"""
-    QUESTION:
-    {question}
-
-    TOOL RESULTS:
-    {tool_outputs}
-    """
     
 def create_chat(name: str, openai_model: str, tools: Optional[pxt.tools] = None):
     """Create a chat table with optional tool support.
@@ -55,33 +46,27 @@ def create_chat(name: str, openai_model: str, tools: Optional[pxt.tools] = None)
     if tools:
         # Add tool-enabled response sequence
         chat.add_computed_column(
-            tool_response=openai.chat_completions(
+            initial_tool_response=openai.chat_completions(
                 messages=chat.messages,
                 model=openai_model,
                 tools=tools,
-                tool_choice=tools.choice(required=True)
             )
         )
         
         chat.add_computed_column(
-            tool_result=openai.invoke_tools(tools, chat.tool_response)
+            invoke_tools=openai.invoke_tools(tools, chat.initial_tool_response)
         )
         
         chat.add_computed_column(
-            tool_prompt=_create_tool_prompt(chat.get_messages[-1].content, chat.tool_result)
+            tool_messages=_create_messages(chat.get_messages, chat.system_prompt, chat.invoke_tools)
         )
-        
-        # Final response incorporating tool results
-        final_messages = [
-            {'role': 'system', 'content': "Answer the user's question based on the tool results."},
-            {'role': 'user', 'content': chat.tool_prompt}
-        ]
+    
         
         chat.add_computed_column(
-            final_response=openai.chat_completions(model=openai_model, messages=final_messages)
+            tool_response=openai.chat_completions(model=openai_model, messages=chat.tool_messages)
         )
         
-        chat.add_computed_column(response=chat.final_response.choices[0].message.content)
+        chat.add_computed_column(response=chat.tool_response.choices[0].message.content)
     else:
         # Standard response sequence without tools
         chat.add_computed_column(
@@ -106,29 +91,12 @@ def run(name: str, instructions: str, content: str) -> str:
 
 class Agent:
     """Base agent class that can be composed into workflows"""
-    def __init__(self, name: str, system_prompt: str, model: str = "gpt-4"):
+    def __init__(self, name: str, system_prompt: str, model: str = "gpt-4o-mini", tools: Optional[pxt.tools] = None):
         self.name = name
         self.system_prompt = system_prompt
         self.model = model
-        create_chat(name, model)
+        self.tools = tools
+        create_chat(name, model, tools)
         
     def run(self, content: str) -> str:
         return run(self.name, self.system_prompt, content)
-
-
-# Example usage:
-# # Create agents
-# writer = Agent("writer", "You are an expert writer. Write clear, concise responses.")
-# critic = Agent("critic", "You are a critical editor. Evaluate writing for clarity and accuracy.")
-# 
-# # Setup reflection workflow
-# reflection = IterativeReflection(writer, critic, max_iterations=3)
-# final_text = reflection.run("Explain quantum computing")
-# 
-# # Setup planning workflow
-# planner = Agent("planner", "You are a strategic planner. Break down tasks into clear steps.")
-# executor = Agent("executor", "You are an implementation expert. Execute plans precisely.")
-# validator = Agent("validator", "You are a QA expert. Validate results against requirements.")
-# 
-# planning = CollaborativePlanning(planner, executor, validator)
-# result = planning.run("Create a marketing strategy for a new product")

@@ -43,7 +43,8 @@ yfinance_tools = pxt.tools(
 agent = Agent(
     name="yfinance_analyst", 
     system_prompt="You are a financial analyst, who can access yahoo finance data. Help the user with their stock analysis.", 
-    tools=yfinance_tools
+    tools=yfinance_tools,
+    reset=True
 )
 
 # Example analysis

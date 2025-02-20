@@ -2,12 +2,12 @@
 
 import pixeltable as pxt
 from pixelagent.openai import Agent
-
 from duckduckgo_search import DDGS
+import time  # Add time module import
 
 @pxt.udf
-def search_news(keywords: str, max_results: int = 20) -> str:
-    """Search news using DuckDuckGo and return results."""
+def search_the_web(keywords: str, max_results: int = 20) -> str:
+    """Search the web using DuckDuckGo and return results."""
     try:
         with DDGS() as ddgs:
             results = ddgs.news(
@@ -29,15 +29,31 @@ def search_news(keywords: str, max_results: int = 20) -> str:
     except Exception as e:
         return f"Search failed: {str(e)}"
 
-# Create tools collection
-ddg_tools = pxt.tools(search_news)
+# Start timing
+start_time = time.time()
 
-# Create agent with DuckDuckGo tools
+# Create tools collection
+ddg_tools = pxt.tools(search_the_web)
+
+# Create agent with DuckDuckGo tools and updated system prompt
 agent = Agent(
-    name="web_research_agent",
+    name="web_agent",
     model="gpt-4o-mini",
-    system_prompt="speak in a heavy southern accent"
+    system_prompt="you are a helpful assistant that can search the web for information",
+    tools=ddg_tools,
 )
 
-res = agent.run("write a technical paper (less than 100 words) about the history of the internet")
+# Example usage
+question = "whats the latest news on the humane ai pin? Who won the superbowl?"
+res = agent.run(question)
+
 print(res)
+
+# Calculate and print total execution time
+end_time = time.time()
+execution_time = end_time - start_time
+print(f"\nTotal execution time: {execution_time:.2f} seconds")
+
+# Uncomment to save chat history
+pxt.get_table("web_agent.chat").collect().to_pandas().to_csv("web_agent_chat.csv")
+pxt.get_table("web_agent.messages").collect().to_pandas().to_csv("web_agent_messages.csv")
