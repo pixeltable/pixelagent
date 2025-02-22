@@ -35,6 +35,6 @@ agent = Agent(
     reset=True
 )
 
-question = "whats the latest news on the humane ai pin? Who won the superbowl?"
+question = "whats the latest news in Denver? Who won the superbowl?"
 res = agent.run(question)
 print(res)
