@@ -1,9 +1,12 @@
 # pip install pixeltable openai duckduckgo-search
 
-import pixeltable as pxt
-from pixelagent.openai import Agent
-from duckduckgo_search import DDGS
 import time  # Add time module import
+
+import pixeltable as pxt
+from duckduckgo_search import DDGS
+
+from pixelagent.openai import Agent
+
 
 @pxt.udf
 def search_the_web(keywords: str, max_results: int = 20) -> str:
@@ -28,6 +31,7 @@ def search_the_web(keywords: str, max_results: int = 20) -> str:
             return "\n".join(formatted_results)
     except Exception as e:
         return f"Search failed: {str(e)}"
+
 
 # Start timing
 start_time = time.time()
@@ -56,4 +60,6 @@ print(f"\nTotal execution time: {execution_time:.2f} seconds")
 
 # Uncomment to save chat history
 pxt.get_table("web_agent.chat").collect().to_pandas().to_csv("web_agent_chat.csv")
-pxt.get_table("web_agent.messages").collect().to_pandas().to_csv("web_agent_messages.csv")
+pxt.get_table("web_agent.messages").collect().to_pandas().to_csv(
+    "web_agent_messages.csv"
+)

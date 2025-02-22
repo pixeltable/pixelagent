@@ -1,4 +1,5 @@
 from datetime import datetime
+
 import pixeltable as pxt
 from pixeltable.functions import openai
 from pixeltable.functions.huggingface import sentence_transformer

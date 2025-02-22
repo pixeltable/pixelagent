@@ -84,8 +84,6 @@ agent.init(
 
 
 # Run the agent
-result = agent.run(
-    agent_name="PDF_Search", message="Summarize the report on NVIDIA"
-)
+result = agent.run(agent_name="PDF_Search", message="Summarize the report on NVIDIA")
 
 print(result)
