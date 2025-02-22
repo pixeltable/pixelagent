@@ -1,14 +1,9 @@
-# pip install pixeltable openai duckduckgo-search
-
-import time  # Add time module import
-
-import pixeltable as pxt
 from duckduckgo_search import DDGS
 
-from pixelagent.openai import Agent
+from pixelagent.openai import Agent, tool
 
 
-@pxt.udf
+@tool
 def search_the_web(keywords: str, max_results: int = 20) -> str:
     """Search the web using DuckDuckGo and return results."""
     try:
@@ -32,34 +27,14 @@ def search_the_web(keywords: str, max_results: int = 20) -> str:
     except Exception as e:
         return f"Search failed: {str(e)}"
 
-
-# Start timing
-start_time = time.time()
-
-# Create tools collection
-ddg_tools = pxt.tools(search_the_web)
-
-# Create agent with DuckDuckGo tools and updated system prompt
 agent = Agent(
     name="web_agent",
     model="gpt-4o-mini",
     system_prompt="you are a helpful assistant that can search the web for information",
-    tools=ddg_tools,
+    tools=[search_the_web],
+    reset=True
 )
 
-# Example usage
 question = "whats the latest news on the humane ai pin? Who won the superbowl?"
 res = agent.run(question)
-
 print(res)
-
-# Calculate and print total execution time
-end_time = time.time()
-execution_time = end_time - start_time
-print(f"\nTotal execution time: {execution_time:.2f} seconds")
-
-# Uncomment to save chat history
-pxt.get_table("web_agent.chat").collect().to_pandas().to_csv("web_agent_chat.csv")
-pxt.get_table("web_agent.messages").collect().to_pandas().to_csv(
-    "web_agent_messages.csv"
-)

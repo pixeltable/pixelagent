@@ -6,6 +6,7 @@ from typing import Callable, Dict, List
 
 import pixeltable as pxt
 from openai import OpenAI
+from duckduckgo_search import DDGS
 
 
 def tool(func):
@@ -14,46 +15,45 @@ def tool(func):
         return func(*args, **kwargs)
 
     sig = inspect.signature(func)
-
     parameters = {
         "type": "object",
         "properties": {},
-        "required": [],
         "additionalProperties": False,
     }
-
+    required_params = []
     for param_name, param in sig.parameters.items():
-        param_schema = {"type": "string"}
+        param_type = "string" if param.annotation == str else "integer" if param.annotation == int else "string"
+        param_schema = {"type": param_type}
         if func.__doc__:
             param_schema["description"] = f"Parameter {param_name}"
         parameters["properties"][param_name] = param_schema
         if param.default == inspect.Parameter.empty:
-            parameters["required"].append(param_name)
+            required_params.append(param_name)
+
+    if required_params:
+        parameters["required"] = required_params
 
     tool_dict = {
         "type": "function",
         "function": {
             "name": func.__name__,
-            "description": func.__doc__.strip()
-            if func.__doc__
-            else f"Calls {func.__name__}",
+            "description": func.__doc__.strip() if func.__doc__ else f"Calls {func.__name__}",
             "parameters": parameters,
-            "strict": True,
+            "strict": False,
         },
     }
-
     wrapper.tool_definition = tool_dict
     return wrapper
 
 
-def setup_pixeltable(agent_name: str, reset: bool = False):
-    tables = [i for i in pxt.list_tables() if i.startswith(agent_name)]
+def setup_pixeltable(name: str, reset: bool = False):
+    tables = [i for i in pxt.list_tables() if i.startswith(name)]
     if reset or len(tables) == 0:
-        pxt.drop_dir(agent_name, force=True)
-        pxt.create_dir(agent_name)
+        pxt.drop_dir(name, force=True)
+        pxt.create_dir(name)
 
         messages = pxt.create_table(
-            f"{agent_name}.messages",
+            f"{name}.messages",
             {
                 "message_id": pxt.IntType(),
                 "role": pxt.StringType(),
@@ -64,7 +64,7 @@ def setup_pixeltable(agent_name: str, reset: bool = False):
         )
 
         chat = pxt.create_table(
-            f"{agent_name}.chat",
+            f"{name}.chat",
             {
                 "system_prompt": pxt.StringType(),
                 "user_input": pxt.StringType(),
@@ -73,7 +73,7 @@ def setup_pixeltable(agent_name: str, reset: bool = False):
         )
 
         tool_calls = pxt.create_table(
-            f"{agent_name}.tool_calls",
+            f"{name}.tool_calls",
             {
                 "tool_call_id": pxt.StringType(),
                 "message_id": pxt.IntType(),
@@ -84,9 +84,9 @@ def setup_pixeltable(agent_name: str, reset: bool = False):
             },
         )
     else:
-        messages = pxt.get_table(f"{agent_name}.messages")
-        chat = pxt.get_table(f"{agent_name}.chat")
-        tool_calls = pxt.get_table(f"{agent_name}.tool_calls")
+        messages = pxt.get_table(f"{name}.messages")
+        chat = pxt.get_table(f"{name}.chat")
+        tool_calls = pxt.get_table(f"{name}.tool_calls")
 
     return messages, chat, tool_calls
 
@@ -94,13 +94,13 @@ def setup_pixeltable(agent_name: str, reset: bool = False):
 class Agent:
     def __init__(
         self,
-        agent_name: str,
+        name: str,
         system_prompt: str,
         model: str = "gpt-4o-mini",
         tools: List[Callable] = None,
         reset: bool = False,
     ):
-        self.agent_name = agent_name
+        self.name = name
         self.system_prompt = system_prompt
         self.client = OpenAI()
         self.model = model
@@ -110,7 +110,7 @@ class Agent:
         self.available_tools = {tool.__name__: tool for tool in self.tools}
 
         self.messages_table, self.chat_table, self.tool_calls_table = setup_pixeltable(
-            agent_name, reset
+            name, reset
         )
         self.message_counter = 0
 
