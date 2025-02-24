@@ -4,6 +4,7 @@ agent = Agent(
     name="writer",
     system_prompt="You are a brilliant writer.",
     model="gpt-4o-mini",
+    reset=True
 )
 
 result = agent.run("What is the capital of France?")
