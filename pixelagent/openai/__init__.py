@@ -2,11 +2,10 @@ import inspect
 import json
 from datetime import datetime
 from functools import wraps
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Optional
 
 import pixeltable as pxt
 from openai import OpenAI
-from duckduckgo_search import DDGS
 
 
 def tool(func):
@@ -58,6 +57,7 @@ def setup_pixeltable(name: str, reset: bool = False):
                 "message_id": pxt.IntType(),
                 "role": pxt.StringType(),
                 "content": pxt.StringType(),
+                "attachments": pxt.StringType(nullable=True),
                 "timestamp": pxt.TimestampType(),
             },
             primary_key="message_id",
@@ -99,6 +99,7 @@ class Agent:
         model: str = "gpt-4o-mini",
         tools: List[Callable] = None,
         reset: bool = False,
+        **default_kwargs
     ):
         self.name = name
         self.system_prompt = system_prompt
@@ -106,12 +107,10 @@ class Agent:
         self.model = model
         self.tools = tools if tools else []
         self.reset = reset
+        self.default_kwargs = default_kwargs  # Store defaults
         self.tool_definitions = [tool.tool_definition for tool in self.tools]
         self.available_tools = {tool.__name__: tool for tool in self.tools}
-
-        self.messages_table, self.chat_table, self.tool_calls_table = setup_pixeltable(
-            name, reset
-        )
+        self.messages_table, self.chat_table, self.tool_calls_table = setup_pixeltable(name, reset)
         self.message_counter = 0
 
     def get_history(self) -> List[Dict]:
@@ -159,16 +158,26 @@ class Agent:
 
         return results
 
-    def run(self, user_input: str) -> str:
+    def run(self, user_input: str, attachments: Optional[str] = None, **kwargs) -> str:
         self.message_counter += 1
-
+        
+        kwargs = {**self.default_kwargs, **kwargs}
         message_id = self.message_counter
         history = self.get_history()
+
+        user_content = [{"type": "text", "text": user_input}]
+        if attachments:
+            user_content.append(
+                {
+                    "type": "image_url",
+                    "image_url": {"url": attachments},
+                }
+            )        
 
         messages = (
             [{"role": "system", "content": self.system_prompt}]
             + history
-            + [{"role": "user", "content": user_input}]
+            + [{"role": "user", "content": user_content}]
         )
 
         self.messages_table.insert(
@@ -177,15 +186,18 @@ class Agent:
                     "message_id": message_id,
                     "role": "user",
                     "content": user_input,
+                    "attachments": attachments,
                     "timestamp": datetime.now(),
                 }
             ]
         )
 
+        
         completion = self.client.chat.completions.create(
             model=self.model,
             messages=messages,
             tools=self.tool_definitions if self.tools else None,
+            **kwargs,
         )
 
         if (
@@ -205,10 +217,12 @@ class Agent:
                     }
                 )
 
+            
             final_completion = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
                 tools=self.tool_definitions if self.tools else None,
+                **kwargs,
             )
             response = final_completion.choices[0].message.content
 

@@ -27,12 +27,13 @@ def search_the_web(keywords: str, max_results: int = 20) -> str:
     except Exception as e:
         return f"Search failed: {str(e)}"
 
+
 agent = Agent(
     name="web_agent",
     model="gpt-4o-mini",
     system_prompt="you are a helpful assistant that can search the web for information",
     tools=[search_the_web],
-    reset=True
+    reset=True,
 )
 
 question = "whats the latest news in Denver? Who won the superbowl?"

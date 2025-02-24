@@ -4,11 +4,13 @@ from pixelagent.openai import Agent, tool
 
 import yfinance as yf
 
+
 @tool
 def get_stock_info(ticker: str) -> Dict:
     """Get basic information about a stock."""
     stock = yf.Ticker(ticker)
     return stock.info
+
 
 @tool
 def get_recommendations(ticker: str) -> List[Dict]:
@@ -18,6 +20,7 @@ def get_recommendations(ticker: str) -> List[Dict]:
     if recs is not None:
         return recs.tail(5).to_dict("records")
     return []
+
 
 agent = Agent(
     name="yfinance_analyst",
