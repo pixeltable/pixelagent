@@ -4,7 +4,7 @@ from pixelagent.openai import Agent, tool
 
 
 @tool
-def search_the_web(keywords: str, max_results: int = 20) -> str:
+def search_the_web(keywords: str, max_results: int) -> str:
     """Search the web using DuckDuckGo and return results."""
     try:
         with DDGS() as ddgs:

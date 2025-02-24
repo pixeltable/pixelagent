@@ -2,10 +2,11 @@ import inspect
 import json
 from datetime import datetime
 from functools import wraps
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Type, Union, get_type_hints
 
 import pixeltable as pxt
 from openai import OpenAI
+from pydantic import BaseModel
 
 
 def tool(func):
@@ -13,24 +14,38 @@ def tool(func):
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
 
+    # Get function signature and type hints
     sig = inspect.signature(func)
+    type_hints = get_type_hints(func)
+
     parameters = {
         "type": "object",
         "properties": {},
-        "additionalProperties": False,
+        "required": [],
+        "additionalProperties": False,  # Strict mode disallows unspecified properties
     }
-    required_params = []
+
     for param_name, param in sig.parameters.items():
-        param_type = "string" if param.annotation == str else "integer" if param.annotation == int else "string"
-        param_schema = {"type": param_type}
+        # Determine parameter type from type hints or default to string
+        param_type = type_hints.get(param_name, str)
+        if param_type == str:
+            schema_type = "string"
+        elif param_type == int:
+            schema_type = "integer"
+        elif param_type == float:
+            schema_type = "number"
+        elif param_type == bool:
+            schema_type = "boolean"
+        else:
+            schema_type = "string"  # Fallback for unsupported types
+
+        param_schema = {"type": schema_type}
         if func.__doc__:
             param_schema["description"] = f"Parameter {param_name}"
+
         parameters["properties"][param_name] = param_schema
         if param.default == inspect.Parameter.empty:
-            required_params.append(param_name)
-
-    if required_params:
-        parameters["required"] = required_params
+            parameters["required"].append(param_name)
 
     tool_dict = {
         "type": "function",
@@ -38,12 +53,11 @@ def tool(func):
             "name": func.__name__,
             "description": func.__doc__.strip() if func.__doc__ else f"Calls {func.__name__}",
             "parameters": parameters,
-            "strict": False,
+            "strict": True,  # Enable strict mode
         },
     }
     wrapper.tool_definition = tool_dict
     return wrapper
-
 
 def setup_pixeltable(name: str, reset: bool = False):
     tables = [i for i in pxt.list_tables() if i.startswith(name)]
@@ -98,19 +112,23 @@ class Agent:
         system_prompt: str,
         model: str = "gpt-4o-mini",
         tools: List[Callable] = None,
+        structured_output: Optional[Type[BaseModel]] = None,
         reset: bool = False,
-        **default_kwargs
+        **default_kwargs,
     ):
         self.name = name
         self.system_prompt = system_prompt
         self.client = OpenAI()
         self.model = model
         self.tools = tools if tools else []
+        self.structured_output = structured_output
         self.reset = reset
         self.default_kwargs = default_kwargs  # Store defaults
         self.tool_definitions = [tool.tool_definition for tool in self.tools]
         self.available_tools = {tool.__name__: tool for tool in self.tools}
-        self.messages_table, self.chat_table, self.tool_calls_table = setup_pixeltable(name, reset)
+        self.messages_table, self.chat_table, self.tool_calls_table = setup_pixeltable(
+            name, reset
+        )
         self.message_counter = 0
 
     def get_history(self) -> List[Dict]:
@@ -158,9 +176,10 @@ class Agent:
 
         return results
 
-    def run(self, user_input: str, attachments: Optional[str] = None, **kwargs) -> str:
+    def run(
+        self, user_input: str, attachments: Optional[str] = None, **kwargs
+    ) -> Union[str, BaseModel]:
         self.message_counter += 1
-        
         kwargs = {**self.default_kwargs, **kwargs}
         message_id = self.message_counter
         history = self.get_history()
@@ -168,11 +187,8 @@ class Agent:
         user_content = [{"type": "text", "text": user_input}]
         if attachments:
             user_content.append(
-                {
-                    "type": "image_url",
-                    "image_url": {"url": attachments},
-                }
-            )        
+                {"type": "image_url", "image_url": {"url": attachments}}
+            )
 
         messages = (
             [{"role": "system", "content": self.system_prompt}]
@@ -192,22 +208,36 @@ class Agent:
             ]
         )
 
-        
-        completion = self.client.chat.completions.create(
-            model=self.model,
-            messages=messages,
-            tools=self.tool_definitions if self.tools else None,
-            **kwargs,
+        # Use beta endpoint for structured outputs if specified
+        completion_method = (
+            self.client.beta.chat.completions.parse
+            if self.structured_output
+            else self.client.chat.completions.create
         )
+
+        completion_kwargs = {
+            "model": self.model,
+            "messages": messages,
+            "tools": self.tool_definitions if self.tools else None,
+            **kwargs,
+        }
+        if self.structured_output:
+            completion_kwargs["response_format"] = self.structured_output
+
+        completion = completion_method(**completion_kwargs)
 
         if (
             not hasattr(completion.choices[0].message, "tool_calls")
             or not completion.choices[0].message.tool_calls
         ):
-            response = completion.choices[0].message.content
+            response = (
+                completion.choices[0].message.parsed
+                if self.structured_output
+                else completion.choices[0].message.content
+            )
         else:
             tool_results = self.process_tool_calls(completion, message_id)
-            messages.extend([completion.choices[0].message.to_dict()])
+            messages.append(completion.choices[0].message.to_dict())
             for result in tool_results:
                 messages.append(
                     {
@@ -217,22 +247,32 @@ class Agent:
                     }
                 )
 
-            
-            final_completion = self.client.chat.completions.create(
+            final_completion = completion_method(
                 model=self.model,
                 messages=messages,
                 tools=self.tool_definitions if self.tools else None,
+                response_format=self.structured_output
+                if self.structured_output
+                else None,
                 **kwargs,
             )
-            response = final_completion.choices[0].message.content
+            response = (
+                final_completion.choices[0].message.parsed
+                if self.structured_output
+                else final_completion.choices[0].message.content
+            )
 
+        # Log assistant response
         self.message_counter += 1
+        response_content = (
+            json.dumps(response.dict()) if self.structured_output else response
+        )
         self.messages_table.insert(
             [
                 {
                     "message_id": self.message_counter,
                     "role": "assistant",
-                    "content": response,
+                    "content": response_content,
                     "timestamp": datetime.now(),
                 }
             ]
@@ -243,7 +283,7 @@ class Agent:
                 {
                     "system_prompt": self.system_prompt,
                     "user_input": user_input,
-                    "response": response,
+                    "response": response_content,
                 }
             ]
         )

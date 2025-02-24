@@ -1,8 +1,15 @@
 from typing import Dict, List
 
 import yfinance as yf
+from pydantic import BaseModel
 
 from pixelagent.openai import Agent, tool
+
+
+class FinancialSummary(BaseModel):
+    title: str
+    summary: str
+    recommendations: list[str]
 
 
 @tool
@@ -26,10 +33,13 @@ agent = Agent(
     name="yfinance_analyst",
     system_prompt="You are a financial analyst, who can access yahoo finance data. Help the user with their stock analysis.",
     tools=[get_stock_info, get_recommendations],
+    structured_output=FinancialSummary,
     reset=True,
 )
 
 query = "Provide a 100 word summary of FDS stock"
 
 response = agent.run(query)
-print(response)
+print(response.title)
+print(response.summary)
+print(response.recommendations)
