@@ -51,13 +51,16 @@ def tool(func):
         "type": "function",
         "function": {
             "name": func.__name__,
-            "description": func.__doc__.strip() if func.__doc__ else f"Calls {func.__name__}",
+            "description": func.__doc__.strip()
+            if func.__doc__
+            else f"Calls {func.__name__}",
             "parameters": parameters,
             "strict": True,  # Enable strict mode
         },
     }
     wrapper.tool_definition = tool_dict
     return wrapper
+
 
 def setup_pixeltable(name: str, reset: bool = False):
     tables = [i for i in pxt.list_tables() if i.startswith(name)]
