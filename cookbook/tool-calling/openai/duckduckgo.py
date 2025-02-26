@@ -2,7 +2,6 @@ from duckduckgo_search import DDGS
 
 from pixelagent.openai import Agent, tool
 
-
 @tool
 def search_the_web(keywords: str, max_results: int) -> str:
     """Search the web using DuckDuckGo and return results."""
@@ -33,7 +32,6 @@ agent = Agent(
     model="gpt-4o-mini",
     system_prompt="you are a helpful assistant that can search the web for information",
     tools=[search_the_web],
-    reset=True,
 )
 
 question = "whats the latest news in Denver? Who won the superbowl?"
