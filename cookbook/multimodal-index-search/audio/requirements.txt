@@ -1,6 +1,0 @@
-boto3
-pixeltable
-tiktoken
-openai-whisper
-spacy 
-sentence-transformers
