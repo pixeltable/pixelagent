@@ -8,34 +8,33 @@ from pydantic import BaseModel
 from pixelagent.core import setup_pixeltable
 from pixelagent.core.display import PixelAgentDisplay
 
-class Agent:
+class AgentX:
     def __init__(
         self,
         name: str,
         system_prompt: str,
         model: str = "gpt-4o-mini",
-        tools: List[Callable] = None,
+        powers: List[Callable] = None,
         structured_output: Optional[Type[BaseModel]] = None,
         reset: bool = False,
         debug: bool = True,
+        api_key: str = None,
         **default_kwargs,
     ):
         self.name = name
         self.system_prompt = system_prompt
-        self.client = OpenAI()
+        self.client = OpenAI(api_key=api_key)
         self.model = model
-        self.tools = tools if tools else []
+        self.powers = powers if powers else []
         self.structured_output = structured_output
         self.reset = reset
         self.default_kwargs = default_kwargs
-        self.tool_definitions = [tool.tool_definition for tool in self.tools]
-        self.available_tools = {tool.__name__: tool for tool in self.tools}
+        self.tool_definitions = [tool.tool_definition for tool in self.powers]
+        self.available_powers = {tool.__name__: tool for tool in self.powers}
         self.messages_table, self.tool_calls_table = setup_pixeltable(
-            name, reset
+            name, tool_calls_table=True, reset=reset
         )
         self.message_counter = 0
-        
-        # Observability settings
         self.debug = debug
         self.display = PixelAgentDisplay(debug)
 
@@ -59,8 +58,8 @@ class Agent:
             if self.debug:
                 self.display.display_thinking(f"Calling tool: {function_name}")
 
-            if function_name in self.available_tools:
-                func = self.available_tools[function_name]
+            if function_name in self.available_powers:
+                func = self.available_powers[function_name]
                 try:
                     result = func(**arguments)
                     result_str = str(result)
@@ -90,12 +89,12 @@ class Agent:
 
         return results
 
-    def run(
+    def execute(
         self, user_input: str, attachments: Optional[str] = None, **kwargs
     ) -> Union[str, BaseModel]:
         self.message_counter += 1
-        kwargs = {**self.default_kwargs, **kwargs}
         message_id = self.message_counter
+        kwargs = {**self.default_kwargs, **kwargs}
         
         # Display system prompt on first run
         if self.message_counter == 1 and self.debug:
@@ -104,21 +103,31 @@ class Agent:
         # Display user input
         if self.debug:
             self.display.display_message("user", user_input, attachments)
-        
-        history = self.get_history()
 
+        # Prepare user content
         user_content = [{"type": "text", "text": user_input}]
         if attachments:
             user_content.append(
                 {"type": "image_url", "image_url": {"url": attachments}}
             )
 
-        messages = (
-            [{"role": "system", "content": self.system_prompt}]
-            + history
-            + [{"role": "user", "content": user_content}]
+        # Log user query to Pixeltable
+        self.messages_table.insert(
+            [
+                {
+                    "message_id": message_id,
+                    "system_prompt": self.system_prompt,
+                    "user_input": user_input,
+                    "response": None,
+                    "role": "user",
+                    "content": json.dumps(user_content),  # Store as JSON to preserve structure
+                    "timestamp": datetime.now(),
+                }
+            ]
         )
-
+        
+        history = self.get_history()
+        messages = [{"role": "system", "content": self.system_prompt}] + history
 
         if self.debug:
             self.display.display_thinking(f"Thinking... (using model: {self.model})")
@@ -133,7 +142,7 @@ class Agent:
         completion_kwargs = {
             "model": self.model,
             "messages": messages,
-            "tools": self.tool_definitions if self.tools else None,
+            "powers": self.tool_definitions if self.powers else None,
             **kwargs,
         }
         if self.structured_output:
@@ -173,7 +182,7 @@ class Agent:
             final_completion = completion_method(
                 model=self.model,
                 messages=messages,
-                tools=self.tool_definitions if self.tools else None,
+                powers=self.tool_definitions if self.powers else None,
                 response_format=self.structured_output
                 if self.structured_output
                 else None,
@@ -185,23 +194,20 @@ class Agent:
                 else final_completion.choices[0].message.content
             )
 
-        # Log assistant response
+        # Log assistant response with new message_id
         self.message_counter += 1
+        assistant_message_id = self.message_counter
         response_content = (
             json.dumps(response.dict()) if self.structured_output else response
         )
         
-        # Display assistant response
-        if self.debug:
-            self.display.display_message("assistant", response_content)
-            
         self.messages_table.insert(
             [
                 {
-                    "message_id": self.message_counter,
+                    "message_id": assistant_message_id,
                     "system_prompt": self.system_prompt,
                     "user_input": user_input,
-                    "response": response_content,                    
+                    "response": response_content,
                     "role": "assistant",
                     "content": response_content,
                     "timestamp": datetime.now(),
@@ -209,5 +215,8 @@ class Agent:
             ]
         )
 
+        # Display assistant response
+        if self.debug:
+            self.display.display_message("assistant", response_content)
 
         return response

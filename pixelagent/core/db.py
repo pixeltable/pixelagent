@@ -1,6 +1,6 @@
 import pixeltable as pxt
 
-def setup_pixeltable(name: str, reset: bool = False):
+def setup_pixeltable(name: str, tool_calls_table: bool = False, reset: bool = False):
     tables = [i for i in pxt.list_tables() if i.startswith(name)]
     if reset or len(tables) == 0:
         pxt.drop_dir(name, force=True)
@@ -21,19 +21,24 @@ def setup_pixeltable(name: str, reset: bool = False):
             primary_key="message_id",
         )
 
-        tool_calls = pxt.create_table(
-            f"{name}.tool_calls",
-            {
-                "tool_call_id": pxt.StringType(),
-                "message_id": pxt.IntType(),
-                "tool_name": pxt.StringType(),
-                "arguments": pxt.JsonType(),
-                "result": pxt.StringType(nullable=True),
-                "timestamp": pxt.TimestampType(),
-            },
-        )
+        if tool_calls_table:
+            tool_calls = pxt.create_table(
+                f"{name}.tool_calls",
+                {
+                    "tool_call_id": pxt.StringType(),
+                    "message_id": pxt.IntType(),
+                    "tool_name": pxt.StringType(),
+                    "arguments": pxt.JsonType(),
+                    "result": pxt.StringType(nullable=True),
+                    "timestamp": pxt.TimestampType(),
+                },
+            )
     else:
         messages = pxt.get_table(f"{name}.messages")
-        tool_calls = pxt.get_table(f"{name}.tool_calls")
+        if tool_calls_table:
+            tool_calls = pxt.get_table(f"{name}.tool_calls")
 
-    return messages, tool_calls
+    if tool_calls_table:
+        return messages, tool_calls
+    else:
+        return messages, None

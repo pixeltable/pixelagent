@@ -2,7 +2,7 @@ import inspect
 from functools import wraps
 from typing import get_type_hints
 
-def tool(func):
+def power(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
@@ -39,15 +39,9 @@ def tool(func):
             parameters["required"].append(param_name)
 
     tool_dict = {
-        "type": "function",
-        "function": {
-            "name": func.__name__,
-            "description": func.__doc__.strip()
-            if func.__doc__
-            else f"Calls {func.__name__}",
-            "parameters": parameters,
-            "strict": True,
-        },
+        "name": func.__name__,
+        "description": func.__doc__.strip() if func.__doc__ else f"Calls {func.__name__}",
+        "input_schema": parameters
     }
     wrapper.tool_definition = tool_dict
     return wrapper
