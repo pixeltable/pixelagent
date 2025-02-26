@@ -3,7 +3,7 @@ from typing import Dict, List
 import yfinance as yf
 from pydantic import BaseModel
 
-from pixelagent.openai import Agent, tool
+from pixelagent.openai import AgentX, tool
 
 
 class FinancialSummary(BaseModel):
@@ -29,7 +29,7 @@ def get_recommendations(ticker: str) -> List[Dict]:
     return []
 
 
-agent = Agent(
+agent = AgentX(
     name="yfinance_analyst",
     system_prompt="You are a financial analyst, who can access yahoo finance data. Help the user with their stock analysis.",
     tools=[get_stock_info, get_recommendations],
@@ -39,7 +39,7 @@ agent = Agent(
 
 query = "Provide a 100 word summary of FDS stock"
 
-response = agent.run(query)
+response = agent.execute(query)
 print(response.title)
 print(response.summary)
 print(response.recommendations)

@@ -35,7 +35,7 @@ agentx = AgentX(
     reset=True
 )
 
-result = agentx.run("What’s the capital of France?")
+result = agentx.execute("What’s the capital of France?")
 print(result)  # "Paris! Ready for more? 🇫🇷"
 ```
 
@@ -62,7 +62,7 @@ agentx = AgentX(
     powers=[search_the_web]
 )
 
-print(agentx.run("What’s new in tech? 💻"))
+print(agentx.execute("What’s new in tech? 💻"))
 ```
 
 ### 2. StockX Guide 💸📊
@@ -81,7 +81,7 @@ agentx = AgentX(
     powers=[get_stock_info]
 )
 
-print(agentx.run("What’s up with FDS stock? 📈"))
+print(agentx.execute("What’s up with FDS stock? 📈"))
 ```
 
 ### 3. VisionX Star 👁️‍🗨️📷
@@ -96,7 +96,7 @@ agentx = AgentX(
 )
 
 url = "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
-print(agentx.run("What’s in this pic? 📸", attachments=url))
+print(agentx.execute("What’s in this pic? 📸", attachments=url))
 ```
 
 ---

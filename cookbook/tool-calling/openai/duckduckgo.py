@@ -1,6 +1,6 @@
 from duckduckgo_search import DDGS
 
-from pixelagent.openai import Agent, tool
+from pixelagent.openai import AgentX, tool
 
 @tool
 def search_the_web(keywords: str, max_results: int) -> str:
@@ -27,7 +27,7 @@ def search_the_web(keywords: str, max_results: int) -> str:
         return f"Search failed: {str(e)}"
 
 
-agent = Agent(
+agent = AgentX(
     name="web_agent",
     model="gpt-4o-mini",
     system_prompt="you are a helpful assistant that can search the web for information",
@@ -35,18 +35,18 @@ agent = Agent(
 )
 
 question = "whats the latest news in Denver? Who won the superbowl?"
-res = agent.run(question)
+res = agent.execute(question)
 print(res)
 
 query = "mY NAME is john doe"
-response = agent.run(query)
+response = agent.execute(query)
 print(response)
 
 query = "I went to MIT"
-response = agent.run(query)
+response = agent.execute(query)
 print(response)
 
 
 query = "Whats my name?"
-response = agent.run(query)
+response = agent.execute(query)
 print(response)

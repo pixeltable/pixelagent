@@ -7,5 +7,5 @@ agent = AgentX(
     model="gpt-4o-mini",
     reset=True,
 )
-response = agent.run("Analyze the image", attachments=url)
+response = agent.execute("Analyze the image", attachments=url)
 print(response)

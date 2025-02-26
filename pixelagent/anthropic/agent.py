@@ -12,7 +12,7 @@ class AgentX:
         self,
         name: str,
         system_prompt: str,
-        powers: List[Power],
+        powers: List[Power] = None,
         reset: bool = True,
         model: str = "claude-3-5-sonnet-20241022",
         api_key: str = None,
@@ -20,7 +20,7 @@ class AgentX:
     ):
         self.name = name
         self.system_prompt = system_prompt
-        self.powers = {tool.name: tool for tool in powers}
+        self.powers = {tool.name: tool for tool in powers or []}
         self.model = model
         self.reset = reset
         self.client = anthropic.Anthropic(api_key=api_key or os.environ.get("ANTHROPIC_API_KEY"))
