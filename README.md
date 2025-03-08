@@ -47,12 +47,14 @@ agent = Agent(
     name="writer",
     system_prompt="You are a brilliant writer.",
     model="gpt-4o-mini",
-    reset=True
+    reset=True  # Start with a fresh conversation history
 )
 
 result = agent.run("What is the capital of France?")
 print(result)
 ```
+
+> **Note**: The `reset=True` parameter creates a new conversation history. Use `reset=False` (default) to continue from previous conversations.
 
 ### Agent with Custom Tools
 
@@ -120,6 +122,30 @@ response = agent.run("Analyze the image", attachments=image_url)
 print(response)
 ```
 
+### 🧠 Persistent Memory
+
+PixelAgent's persistent memory is one of its most powerful features. By default, every interaction with your agent is automatically stored in a Pixeltable database, allowing your agent to:
+
+- Remember previous conversations and user preferences
+- Recall information shared in earlier interactions
+- Build context over time for more personalized responses
+- Access its memory even after application restarts
+
+The `reset` parameter is crucial for controlling this memory:
+- When `reset=True`: Creates a fresh conversation history, clearing previous memory
+- When `reset=False` (default): Continues from previous conversations, maintaining memory
+
+```python
+# Start with a fresh memory
+agent = Agent(name="assistant", reset=True)
+
+# Later, continue the same conversation
+agent = Agent(name="assistant", reset=False)  # Will remember previous interactions
+```
+
+This is particularly useful for development (reset=True) vs. production (reset=False) environments, or when you want to start a new conversation topic while preserving the agent's identity.
+
+
 ## 📚 Documentation
 
 For more examples and detailed documentation, check out the `cookbook` directory:
@@ -128,6 +154,8 @@ For more examples and detailed documentation, check out the `cookbook` directory
 - **Tool Calling**: Agents with custom tools and functions
 - **Structured Outputs**: Type-safe responses with Pydantic
 - **Multimodal**: Working with images and other media types
+- **Persistent Memory**: Working with agent memory and conversation history
+
 
 ## 🧩 How It Works
 
