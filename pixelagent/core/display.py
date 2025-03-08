@@ -12,88 +12,88 @@ class PixelAgentDisplay:
         self.console = Console() if debug else None
     
     def display_message(self, role: str, content: str, attachments: Optional[str] = None):
-        """Drop a message with Agent swagger—locked and loaded!"""
+        """Display a message with appropriate formatting based on its role."""
         if not self.debug:
             return
             
         if role == "system":
             self.console.print(Panel(
                 content, 
-                title="[yellow bold]Agent Core[/]", 
-                border_style="yellow bold", 
-                subtitle="⚙️  System Boost ⚙️"
+                title="[yellow bold]System[/]", 
+                border_style="yellow", 
+                subtitle="Configuration"
             ))
         elif role == "user":
             self.console.print(Panel(
                 Text(content, style="green"), 
-                title="[green bold]Your Command[/]", 
-                border_style="green bold", 
-                subtitle="🚀 Launched by You 🚀"
+                title="[green bold]User Input[/]", 
+                border_style="green", 
+                subtitle="Query"
             ))
             if attachments:
                 self.console.print(Panel(
                     f"📎 Attachment: {attachments}", 
-                    border_style="green bold", 
-                    title="[green italic]Extra Input[/]"
+                    border_style="green", 
+                    title="[green]Additional Context[/]"
                 ))
         elif role == "assistant":
             try:
                 md = Markdown(content)
                 self.console.print(Panel(
                     md, 
-                    title="[blue bold]Agent Output[/]", 
-                    border_style="blue bold", 
-                    subtitle="✨ Powered Up ✨"
+                    title="[blue bold]PixelAgent[/]", 
+                    border_style="blue", 
+                    subtitle="Response"
                 ))
             except:
                 self.console.print(Panel(
                     Text(content, style="blue"), 
-                    title="[blue bold]Agent Output[/]", 
-                    border_style="blue bold", 
-                    subtitle="✨ Powered Up ✨"
+                    title="[blue bold]PixelAgent[/]", 
+                    border_style="blue", 
+                    subtitle="Response"
                 ))
         elif role == "tool":
             self.console.print(Panel(
                 content, 
-                title="[purple bold]Power Surge[/]", 
-                border_style="purple bold", 
-                subtitle="💥 Agent Flex 💥"
+                title="[purple bold]Tool Output[/]", 
+                border_style="purple", 
+                subtitle="Function Result"
             ))
 
     def display_thinking(self, message: str):
-        """Flash the Agent grind—processing in style!"""
+        """Display the agent's thinking process."""
         if not self.debug:
             return
-        self.console.print(f"[dim italic cyan]⏳ Agent Grinding: {message}...[/]")
+        self.console.print(f"[dim italic cyan]⏳ Processing: {message}...[/]")
 
     def display_tool_call(self, tool_name: str, arguments: Dict, result: str):
-        """Flex the Agent tool stats—sleek and sharp!"""
+        """Display tool call details with inputs and outputs."""
         if not self.debug:
             return
             
-        table = Table(title=f"[purple bold]Power Surge: {tool_name} ⚡[/]", border_style="purple")
-        table.add_column("🔧 Inputs", style="cyan bold", justify="center")
-        table.add_column("🎯 Output", style="green bold", justify="center")
+        table = Table(title=f"[purple bold]Tool Call: {tool_name}[/]", border_style="purple")
+        table.add_column("Parameters", style="cyan", justify="left")
+        table.add_column("Result", style="green", justify="left")
         
         args_str = json.dumps(arguments, indent=2)
         table.add_row(Text(args_str, style="cyan"), Text(result, style="green"))
         
         self.console.print(Panel(
             table, 
-            border_style="purple bold", 
-            subtitle="[purple italic]🔥 Power Unleashed 🔥[/]"
+            border_style="purple", 
+            subtitle="[purple]Function Execution[/]"
         ))
         
     def display_history(self, history):
-        """Replay the Agent saga—full run stats!"""
+        """Display the conversation history."""
         if not self.debug:
             return
             
         self.console.print(Panel(
-            Text("Agent Run Log 📜", style="bold white"), 
-            border_style="bold red", 
-            title="[red bold]X-Factor Replay[/]",
-            subtitle="📈 Full History 📈"
+            Text("Conversation History", style="bold white"), 
+            border_style="bold blue", 
+            title="[blue bold]Session Log[/]",
+            subtitle="Complete Interaction"
         ))
         
         for msg in history:
