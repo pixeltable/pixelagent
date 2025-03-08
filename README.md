@@ -140,22 +140,6 @@ PixelAgent uses Pixeltable as a persistent storage layer, automatically recordin
 
 The framework is designed for **lightning-fast performance** with **lowest-level access** to model internals, giving you complete control while maintaining simplicity.
 
-## 🔧 Known Issues
-
-If you encounter a `KeyError: 'type'` when using tools, you need to update the tool definition format in `pixelagent/openai/utils.py`. The OpenAI API requires tools to have a specific format with a "type" field. Here's how to fix it:
-
-```python
-# In pixelagent/openai/utils.py, update the tool_dict definition:
-tool_dict = {
-    "type": "function",
-    "function": {
-        "name": func.__name__,
-        "description": func.__doc__.strip() if func.__doc__ else f"Calls {func.__name__}",
-        "parameters": parameters
-    }
-}
-```
-
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
