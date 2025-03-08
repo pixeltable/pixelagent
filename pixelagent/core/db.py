@@ -9,28 +9,27 @@ def setup_pixeltable(name: str, tool_calls_table: bool = False, reset: bool = Fa
         messages = pxt.create_table(
             f"{name}.messages",
             {
-                "message_id": pxt.IntType(),
-                "system_prompt": pxt.StringType(),
-                "user_input": pxt.StringType(),
-                "response": pxt.StringType(nullable=True),                
-                "role": pxt.StringType(),
-                "content": pxt.StringType(),
-                "attachments": pxt.StringType(nullable=True),
-                "timestamp": pxt.TimestampType(),
+                "message_id": pxt.Int,
+                "system_prompt": pxt.String,
+                "user_input": pxt.String,
+                "response": pxt.String,                
+                "role": pxt.String,
+                "content": pxt.String,
+                "attachments": pxt.String,
+                "timestamp": pxt.Timestamp,
             },
-            primary_key="message_id",
         )
 
         if tool_calls_table:
             tool_calls = pxt.create_table(
                 f"{name}.tool_calls",
                 {
-                    "tool_call_id": pxt.StringType(),
-                    "message_id": pxt.IntType(),
-                    "tool_name": pxt.StringType(),
-                    "arguments": pxt.JsonType(),
-                    "result": pxt.StringType(nullable=True),
-                    "timestamp": pxt.TimestampType(),
+                    "tool_call_id": pxt.String,
+                    "message_id": pxt.Int,
+                    "tool_name": pxt.String,
+                    "arguments": pxt.Json,
+                    "result": pxt.String,
+                    "timestamp": pxt.Timestamp,
                 },
             )
     else:
