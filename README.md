@@ -26,6 +26,16 @@
 pip install pixelagent
 ```
 
+### Install from GitHub
+
+You can also install the latest development version directly from GitHub:
+
+```bash
+git clone https://github.com/pixeltable/pixelagent.git
+cd pixelagent
+pip install -e .
+```
+
 ## 🏁 Quick Start
 
 ### Basic Chat Agent
