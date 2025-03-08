@@ -1,7 +1,7 @@
 import os
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Callable
 import anthropic
-from pixelagent.anthropic.utils import Tool
+from pixelagent.anthropic.utils import tool
 from pixelagent.core import setup_pixeltable
 from pixelagent.core.display import PixelAgentDisplay
 import json
@@ -12,7 +12,7 @@ class Agent:
         self,
         name: str,
         system_prompt: str,
-        tools: List[Tool] = None,
+        tools: List[Callable] = None,
         reset: bool = True,
         model: str = "claude-3-5-sonnet-20241022",
         api_key: str = None,
@@ -20,7 +20,7 @@ class Agent:
     ):
         self.name = name
         self.system_prompt = system_prompt
-        self.tools = {tool.name: tool for tool in tools or []}
+        self.tools = {tool_func.name: tool_func for tool_func in tools or []}
         self.model = model
         self.reset = reset
         self.client = anthropic.Anthropic(api_key=api_key or os.environ.get("ANTHROPIC_API_KEY"))
@@ -34,7 +34,7 @@ class Agent:
 
     def _format_tools(self) -> List[Dict]:
         """Format tools for Anthropic API."""
-        return [tool.to_dict() for tool in self.tools.values()]
+        return [tool_func.to_dict() for tool_func in self.tools.values()]
 
     def _run_tool(self, tool_name: str, tool_input: Dict, message_id: int) -> Any:
         """Execute the specified tool with given input and log to Pixeltable."""
@@ -48,7 +48,7 @@ class Agent:
             return {"error": error_msg}
 
         try:
-            result = self.tools[tool_name].func(**tool_input)
+            result = self.tools[tool_name](**tool_input)
             result_str = str(result)
             
             # Log tool call to Pixeltable
