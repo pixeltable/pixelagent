@@ -1,7 +1,7 @@
 from functools import wraps
 from typing import Callable, Dict
 
-class Power:
+class Tool:
     def __init__(self, func: Callable):
         self.func = func
         self.name = func.__name__
@@ -38,6 +38,6 @@ class Power:
             "input_schema": self.parameters
         }
 
-def power(func: Callable) -> Power:
+def tool(func: Callable) -> Tool:
     """Decorator to mark functions as tools."""
-    return Power(func)
+    return Tool(func)

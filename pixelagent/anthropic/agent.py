@@ -1,18 +1,18 @@
 import os
 from typing import Dict, List, Any
 import anthropic
-from pixelagent.anthropic.utils import Power
+from pixelagent.anthropic.utils import Tool
 from pixelagent.core import setup_pixeltable
 from pixelagent.core.display import PixelAgentDisplay
 import json
 from datetime import datetime
 
-class AgentX:
+class Agent:
     def __init__(
         self,
         name: str,
         system_prompt: str,
-        powers: List[Power] = None,
+        tools: List[Tool] = None,
         reset: bool = True,
         model: str = "claude-3-5-sonnet-20241022",
         api_key: str = None,
@@ -20,7 +20,7 @@ class AgentX:
     ):
         self.name = name
         self.system_prompt = system_prompt
-        self.powers = {tool.name: tool for tool in powers or []}
+        self.tools = {tool.name: tool for tool in tools or []}
         self.model = model
         self.reset = reset
         self.client = anthropic.Anthropic(api_key=api_key or os.environ.get("ANTHROPIC_API_KEY"))
@@ -32,23 +32,23 @@ class AgentX:
         self.debug = debug
         self.display = PixelAgentDisplay(debug)
 
-    def _format_powers(self) -> List[Dict]:
-        """Format powers for Anthropic API."""
-        return [tool.to_dict() for tool in self.powers.values()]
+    def _format_tools(self) -> List[Dict]:
+        """Format tools for Anthropic API."""
+        return [tool.to_dict() for tool in self.tools.values()]
 
-    def _execute_tool(self, tool_name: str, tool_input: Dict, message_id: int) -> Any:
+    def _run_tool(self, tool_name: str, tool_input: Dict, message_id: int) -> Any:
         """Execute the specified tool with given input and log to Pixeltable."""
         if self.debug:
             self.display.display_thinking(f"Calling tool: {tool_name}")
 
-        if tool_name not in self.powers:
-            error_msg = f"Power {tool_name} not found"
+        if tool_name not in self.tools:
+            error_msg = f"Tool {tool_name} not found"
             if self.debug:
                 self.display.display_tool_call(tool_name, tool_input, error_msg)
             return {"error": error_msg}
 
         try:
-            result = self.powers[tool_name].func(**tool_input)
+            result = self.tools[tool_name].func(**tool_input)
             result_str = str(result)
             
             # Log tool call to Pixeltable
@@ -77,7 +77,7 @@ class AgentX:
         ).collect()
         return [{"role": row["role"], "content": row["content"]} for row in result]
 
-    def execute(self, query: str) -> str:
+    def run(self, query: str) -> str:
         """Process a query and return the response."""
         self.message_counter += 1
         message_id = self.message_counter
@@ -114,7 +114,7 @@ class AgentX:
                 model=self.model,
                 system=self.system_prompt,
                 messages=self.messages,
-                tools=self._format_powers(),
+                tools=self._format_tools(),
                 max_tokens=1000
             )
 
@@ -153,7 +153,7 @@ class AgentX:
                 for tool_use in tool_uses:
                     tool_name = tool_use.name
                     tool_input = tool_use.input
-                    tool_result = self._execute_tool(tool_name, tool_input, assistant_message_id)
+                    tool_result = self._run_tool(tool_name, tool_input, assistant_message_id)
                     tool_results.append({
                         "type": "tool_result",
                         "tool_use_id": tool_use.id,

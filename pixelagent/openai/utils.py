@@ -2,7 +2,7 @@ import inspect
 from functools import wraps
 from typing import get_type_hints
 
-def power(func):
+def tool(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
@@ -14,7 +14,7 @@ def power(func):
         "type": "object",
         "properties": {},
         "required": [],
-        "additionalProperties": False,
+        "additionalProperties": False,  # This is fine for strict mode
     }
 
     for param_name, param in sig.parameters.items():
@@ -28,20 +28,27 @@ def power(func):
         elif param_type == bool:
             schema_type = "boolean"
         else:
-            schema_type = "string"
+            schema_type = "string"  # Fallback
 
         param_schema = {"type": schema_type}
         if func.__doc__:
             param_schema["description"] = f"Parameter {param_name}"
-
-        parameters["properties"][param_name] = param_schema
-        if param.default == inspect.Parameter.empty:
+        if param.default != inspect.Parameter.empty:
+            param_schema["default"] = param.default
+        else:
             parameters["required"].append(param_name)
 
+        parameters["properties"][param_name] = param_schema
+
+    # Updated tool_dict with strict=True
     tool_dict = {
-        "name": func.__name__,
-        "description": func.__doc__.strip() if func.__doc__ else f"Calls {func.__name__}",
-        "input_schema": parameters
+        "type": "function",
+        "function": {
+            "name": func.__name__,
+            "description": func.__doc__.strip() if func.__doc__ else f"Calls {func.__name__}",
+            "parameters": parameters,
+            "strict": True
+        }
     }
     wrapper.tool_definition = tool_dict
     return wrapper

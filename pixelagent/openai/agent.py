@@ -8,13 +8,13 @@ from pydantic import BaseModel
 from pixelagent.core import setup_pixeltable
 from pixelagent.core.display import PixelAgentDisplay
 
-class AgentX:
+class Agent:
     def __init__(
         self,
         name: str,
         system_prompt: str,
         model: str = "gpt-4o-mini",
-        powers: List[Callable] = None,
+        tools: List[Callable] = None,
         structured_output: Optional[Type[BaseModel]] = None,
         reset: bool = False,
         debug: bool = True,
@@ -25,12 +25,12 @@ class AgentX:
         self.system_prompt = system_prompt
         self.client = OpenAI(api_key=api_key)
         self.model = model
-        self.powers = powers if powers else []
+        self.tools = tools if tools else []
         self.structured_output = structured_output
         self.reset = reset
         self.default_kwargs = default_kwargs
-        self.tool_definitions = [tool.tool_definition for tool in self.powers]
-        self.available_powers = {tool.__name__: tool for tool in self.powers}
+        self.tool_definitions = [tool.tool_definition for tool in self.tools]
+        self.available_tools = {tool.__name__: tool for tool in self.tools}
         self.messages_table, self.tool_calls_table = setup_pixeltable(
             name, tool_calls_table=True, reset=reset
         )
@@ -58,8 +58,8 @@ class AgentX:
             if self.debug:
                 self.display.display_thinking(f"Calling tool: {function_name}")
 
-            if function_name in self.available_powers:
-                func = self.available_powers[function_name]
+            if function_name in self.available_tools:
+                func = self.available_tools[function_name]
                 try:
                     result = func(**arguments)
                     result_str = str(result)
@@ -89,7 +89,7 @@ class AgentX:
 
         return results
 
-    def execute(
+    def run(
         self, user_input: str, attachments: Optional[str] = None, **kwargs
     ) -> Union[str, BaseModel]:
         self.message_counter += 1
@@ -142,7 +142,7 @@ class AgentX:
         completion_kwargs = {
             "model": self.model,
             "messages": messages,
-            "powers": self.tool_definitions if self.powers else None,
+            "tools": self.tool_definitions if self.tools else None,
             **kwargs,
         }
         if self.structured_output:
@@ -182,7 +182,7 @@ class AgentX:
             final_completion = completion_method(
                 model=self.model,
                 messages=messages,
-                powers=self.tool_definitions if self.powers else None,
+                tools=self.tool_definitions if self.tools else None,
                 response_format=self.structured_output
                 if self.structured_output
                 else None,

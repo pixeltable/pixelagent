@@ -1,174 +1,161 @@
-# PixelAgent: Unleash Your AgentX Crew 🚀✨
+# 🤖 PixelAgent
 
-Meet **PixelAgent**—the fastest, most flexible way to build **Agent** helpers that tackle tasks with style 🌟. Choose your model, stack your powers, and let these autonomous champs roll with *blazing speed* ⚡, *rock-solid persistence* 🛡️, and *multimodal magic* 📸. Built for real work, loved by tinkerers—PixelAgent’s your go-to for getting stuff done, easy and fun 🎉.
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.10+-blue.svg" alt="Python Version">
+  <img src="https://img.shields.io/badge/License-Apache_2.0-green.svg" alt="License">
+  <img src="https://img.shields.io/badge/Status-Alpha-orange.svg" alt="Status">
+</p>
 
-Coders, creators, pros—anyone can jump in and make AgentX shine 🌈.
+**PixelAgent** is a powerful, lightweight framework for building AI agents with persistent memory, built on top of [Pixeltable](https://github.com/pixeltable/pixeltable). Create, deploy, and monitor sophisticated AI agents with just a few lines of code. ⚡ **Lightning fast** with **lowest level access** to the underlying models and data.
 
----
+## ✨ Features
 
-## Why PixelAgent? 🤔💡
+- ⚡ **Lightning Fast**: Optimized for speed and performance
+- 🔧 **Low-Level API**: Direct control over model parameters and behavior
+- 🧠 **Persistent Memory**: Every interaction is automatically stored in a Pixeltable database
+- 🔌 **Multi-Model Support**: Works with OpenAI and Anthropic models out of the box
+- 🛠️ **Tool Integration**: Easily add custom tools and functions to your agents
+- 📊 **Structured Outputs**: Define Pydantic models for type-safe, structured responses
+- 📝 **Conversation History**: Query and analyze full conversation history
+- 🖼️ **Multimodal Support**: Handle text, images, and other media types
+- 🔍 **Debugging Tools**: Built-in debugging and visualization capabilities
 
-- ⚡ **Super Fast**: Powers kick in instantly—zero lag!  
-- 🛡️ **Always On**: Persistent AgentX keep the ball rolling.  
-- 📸 **See Everything**: Text, images, PDFs—they handle it all.  
-- 🧩 **Your Way**: Pick OpenAI, Anthropic, or add your own Python powers.  
-- 🏢 **Ready to Roll**: Scalable, reliable—built for the big stuff.
+## 🚀 Installation
 
----
-
-## Get Started with AgentX 🌱⚙️
-
-Grab the goods:
 ```bash
 pip install pixelagent
 ```
 
-Spin up your first AgentX:
-```python
-from pixelagent.anthropic import AgentX
+## 🏁 Quick Start
 
-agentx = AgentX(
-    name="HelperX",
-    system_prompt="You’re a brilliant assistant ✨.",
-    model="claude-3-5-haiku-latest",
-    max_tokens=1024,
+### Basic Chat Agent
+
+```python
+from pixelagent.openai import Agent
+
+agent = Agent(
+    name="writer",
+    system_prompt="You are a brilliant writer.",
+    model="gpt-4o-mini",
     reset=True
 )
 
-result = agentx.execute("What’s the capital of France?")
-print(result)  # "Paris! Ready for more? 🇫🇷"
+result = agent.run("What is the capital of France?")
+print(result)
 ```
 
----
+### Agent with Custom Tools
 
-## Build Your Crew 🛠️🌟
-
-### 1. WebX Scout 🌐🔍
-Digs up web info fast:
 ```python
-from duckduckgo_search import DDGS
-from pixelagent.anthropic import AgentX, power
+from pixelagent.openai import Agent, tool
 
-@power
-def search_the_web(keywords: str, max_results: int) -> str:
-    with DDGS() as ddgs:
-        results = ddgs.news(keywords, max_results=max_results)
-        return "\n".join([f"{i}. {r['title']} - {r['body']}" for i, r in enumerate(results, 1)])
+@tool
+def search_web(keywords: str, max_results: int) -> str:
+    """Search the web for information."""
+    # Simplified example
+    results = [f"Result {i} for: {keywords}" for i in range(max_results)]
+    return "\n".join(results)
 
-agentx = AgentX(
-    name="WebX",
-    model="claude-3-5-sonnet-20241022",
-    system_prompt="You’re a web info whiz 🔍.",
-    powers=[search_the_web]
+agent = Agent(
+    name="researcher",
+    system_prompt="You are a research assistant that can search the web.",
+    model="gpt-4o-mini",
+    tools=[search_web]
 )
 
-print(agentx.execute("What’s new in tech? 💻"))
+response = agent.run("Find the latest news about AI")
+print(response)
 ```
 
-### 2. StockX Guide 💸📊
-Lights up financial stats:
+### Structured Output
+
 ```python
-import yfinance as yf
-from pixelagent.openai import AgentX, power
+from typing import List
+from pydantic import BaseModel
+from pixelagent.openai import Agent, tool
 
-@power
-def get_stock_info(ticker: str) -> dict:
-    return yf.Ticker(ticker).info
+class MovieRecommendation(BaseModel):
+    title: str
+    year: int
+    genres: List[str]
+    description: str
+    rating: float
 
-agentx = AgentX(
-    name="StockX",
-    system_prompt="You’re a finance helper 💰.",
-    powers=[get_stock_info]
+agent = Agent(
+    name="movie_recommender",
+    system_prompt="You recommend movies based on user preferences.",
+    model="gpt-4o-mini",
+    structured_output=MovieRecommendation,
+    reset=True
 )
 
-print(agentx.execute("What’s up with FDS stock? 📈"))
+movie = agent.run("Recommend a sci-fi movie from the 90s")
+print(f"Title: {movie.title}, Year: {movie.year}, Rating: {movie.rating}")
 ```
 
-### 3. VisionX Star 👁️‍🗨️📷
-Sees and explains images:
-```python
-from pixelagent.openai import AgentX
+### Multimodal Support
 
-agentx = AgentX(
-    name="VisionX",
-    system_prompt="You’re an image guru 🎨.",
-    model="gpt-4o-mini"
+```python
+from pixelagent.openai import Agent
+
+image_url = "https://example.com/image.jpg"
+agent = Agent(
+    name="image_analyzer",
+    system_prompt="You are an image analysis expert.",
+    model="gpt-4o-mini",
+    reset=True
 )
 
-url = "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
-print(agentx.execute("What’s in this pic? 📸", attachments=url))
+response = agent.run("Analyze the image", attachments=image_url)
+print(response)
 ```
 
----
+## 📚 Documentation
 
-## AgentX Terminal Magic 🎨⚡
+For more examples and detailed documentation, check out the `cookbook` directory:
 
-Your AgentX crew doesn’t just work—it *glows*. Peek at the fancy terminal output with `AgentXDisplay`:
+- **Basic Chat**: Simple conversation agents
+- **Tool Calling**: Agents with custom tools and functions
+- **Structured Outputs**: Type-safe responses with Pydantic
+- **Multimodal**: Working with images and other media types
 
-- **Your Command**:  
-  ```
-  ┌── Your Command ──┐
-  │ What’s new in tech?  │
-  └─── 🚀 Launched by You 🚀 ───┘
-  ```
+## 🧩 How It Works
 
-- **Power Surge**:  
-  ```
-  ┌── Power Surge: search_the_web ⚡ ──┐
-  │ ┌────────────┬──────────────┐   │
-  │ │ 🔧 Inputs  │ 🎯 Output    │   │
-  │ ├────────────┼──────────────┤   │
-  │ │ {          │ 1. "Tech up" │   │
-  │ │   "keywords": "tech news"   │   │
-  │ │ }          │              │   │
-  │ └────────────┴──────────────┘   │
-  └─── 🔥 Power Unleashed 🔥 ───┘
-  ```
+PixelAgent uses Pixeltable as a persistent storage layer, automatically recording all conversations, tool calls, and agent states. This enables:
 
-- **AgentX Output**:  
-  ```
-  ┌── AgentX Output ──┐
-  │ Tech’s booming—check it!  │
-  └─── ✨ Powered Up ✨ ───┘
-  ```
+1. **Persistence**: Conversations continue where they left off
+2. **Analysis**: Query your agent's history with SQL-like syntax
+3. **Monitoring**: Track performance and behavior over time
+4. **Debugging**: Identify and fix issues in your agent's reasoning
 
-*Working hard?* See it grind:  
-```
-⏳ AgentX Grinding: Processing your request...
+The framework is designed for **lightning-fast performance** with **lowest-level access** to model internals, giving you complete control while maintaining simplicity.
+
+## 🔧 Known Issues
+
+If you encounter a `KeyError: 'type'` when using tools, you need to update the tool definition format in `pixelagent/openai/utils.py`. The OpenAI API requires tools to have a specific format with a "type" field. Here's how to fix it:
+
+```python
+# In pixelagent/openai/utils.py, update the tool_dict definition:
+tool_dict = {
+    "type": "function",
+    "function": {
+        "name": func.__name__,
+        "description": func.__doc__.strip() if func.__doc__ else f"Calls {func.__name__}",
+        "parameters": parameters
+    }
+}
 ```
 
----
+## 🤝 Contributing
 
-## Boost Your Flow 🌈🔧
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-- 🛠️ **Custom Powers**: Add your Python tricks—AgentX makes ‘em fly.  
-- 🌟 **Quick Starts**: WebX, StockX, VisionX—ready to tweak and go.  
-- 🎮 **AgentX Playground**: Test live, try fun challenges—“Grab news in 0.7s ⚡”—and see stats like “99% uptime! 🔥”.  
+## 📄 License
 
----
+PixelAgent is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
-## Big Wins, No Sweat 🌟💼
+## 🔗 Links
 
-- ⚡ **Speedy Wins**: Tasks done in *seconds*—faster than fast.  
-- 📈 **Scale Easy**: Run 10 AgentX or 100—smooth every time.  
-- 💡 **Time Saved**: Less work, more results—built for real impact.  
-
-*Example*: “WebX grabbed 10 articles in 2s ⚡. Think auto-updates, anytime.”
-
----
-
-## Join the Fun 🤝🎈
-
-Share your AgentX creations on X with `#PixelAgent`. “My StockX nailed FDS stats—0.5s! 💸” Cool ideas spread fast.
-
----
-
-## Jump In & Play ▶️
-
-```bash
-pip install pixelagent
-```
-
-Docs coming soon—until then, build your AgentX and have fun. Questions? Hit us on GitHub.
-
-**PixelAgent: Call up AgentX. Add your powers. Make it happen. 🌈⚡**
+- [Pixeltable GitHub](https://github.com/pixeltable/pixeltable)
+- [Twitter](https://twitter.com/pixeltableai)
+- [Discord Community](https://discord.gg/pixeltable)

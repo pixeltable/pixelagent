@@ -1,6 +1,6 @@
 # Example usage:
 import yfinance as yf
-from pixelagent.anthropic import AgentX, tool
+from pixelagent.anthropic import Agent, tool
 from typing import Dict, List
 
 @tool
@@ -18,7 +18,7 @@ def get_recommendations(ticker: str) -> List[Dict]:
         return recs.tail(5).to_dict("records")
     return []
 
-agent = AgentX(
+agent = Agent(
     name="yfinance_analyst",
     system_prompt="You are a financial analyst, who can access yahoo finance data. Help the user with their stock analysis. Use both tools.",
     tools=[get_stock_info, get_recommendations],
@@ -26,5 +26,5 @@ agent = AgentX(
 )
 
 query = "Provide a 100 word summary of FDS stock"
-response = agent.execute(query)
+response = agent.run(query)
 print(response)

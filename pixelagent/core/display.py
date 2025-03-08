@@ -12,14 +12,14 @@ class PixelAgentDisplay:
         self.console = Console() if debug else None
     
     def display_message(self, role: str, content: str, attachments: Optional[str] = None):
-        """Drop a message with AgentX swagger—locked and loaded!"""
+        """Drop a message with Agent swagger—locked and loaded!"""
         if not self.debug:
             return
             
         if role == "system":
             self.console.print(Panel(
                 content, 
-                title="[yellow bold]AgentX Core[/]", 
+                title="[yellow bold]Agent Core[/]", 
                 border_style="yellow bold", 
                 subtitle="⚙️  System Boost ⚙️"
             ))
@@ -41,14 +41,14 @@ class PixelAgentDisplay:
                 md = Markdown(content)
                 self.console.print(Panel(
                     md, 
-                    title="[blue bold]AgentX Output[/]", 
+                    title="[blue bold]Agent Output[/]", 
                     border_style="blue bold", 
                     subtitle="✨ Powered Up ✨"
                 ))
             except:
                 self.console.print(Panel(
                     Text(content, style="blue"), 
-                    title="[blue bold]AgentX Output[/]", 
+                    title="[blue bold]Agent Output[/]", 
                     border_style="blue bold", 
                     subtitle="✨ Powered Up ✨"
                 ))
@@ -57,17 +57,17 @@ class PixelAgentDisplay:
                 content, 
                 title="[purple bold]Power Surge[/]", 
                 border_style="purple bold", 
-                subtitle="💥 AgentX Flex 💥"
+                subtitle="💥 Agent Flex 💥"
             ))
 
     def display_thinking(self, message: str):
-        """Flash the AgentX grind—processing in style!"""
+        """Flash the Agent grind—processing in style!"""
         if not self.debug:
             return
-        self.console.print(f"[dim italic cyan]⏳ AgentX Grinding: {message}...[/]")
+        self.console.print(f"[dim italic cyan]⏳ Agent Grinding: {message}...[/]")
 
     def display_tool_call(self, tool_name: str, arguments: Dict, result: str):
-        """Flex the AgentX power stats—sleek and sharp!"""
+        """Flex the Agent tool stats—sleek and sharp!"""
         if not self.debug:
             return
             
@@ -85,12 +85,12 @@ class PixelAgentDisplay:
         ))
         
     def display_history(self, history):
-        """Replay the AgentX saga—full run stats!"""
+        """Replay the Agent saga—full run stats!"""
         if not self.debug:
             return
             
         self.console.print(Panel(
-            Text("AgentX Run Log 📜", style="bold white"), 
+            Text("Agent Run Log 📜", style="bold white"), 
             border_style="bold red", 
             title="[red bold]X-Factor Replay[/]",
             subtitle="📈 Full History 📈"

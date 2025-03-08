@@ -1,8 +1,8 @@
 from duckduckgo_search import DDGS
 
-from pixelagent.anthropic import AgentX, power
+from pixelagent.anthropic import Agent, tool
 
-@power
+@tool
 def search_the_web(keywords: str, max_results: int) -> str:
     """Search the web using DuckDuckGo and return results."""
     try:
@@ -27,12 +27,12 @@ def search_the_web(keywords: str, max_results: int) -> str:
         return f"Search failed: {str(e)}"
 
 
-agent = AgentX(
+agent = Agent(
     name="web_agent",
     model="claude-3-5-sonnet-20241022",
     system_prompt="you are a helpful assistant that can search the web for information",
-    powers=[search_the_web],
+    tools=[search_the_web],
 )
 
-res = agent.execute("whats the latest news in Denver? Who won the superbowl?")
+res = agent.run("whats the latest news in Denver? Who won the superbowl?")
 print(res)
