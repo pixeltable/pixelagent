@@ -47,6 +47,8 @@ class Agent:
         n_latest_messages: int = 10,
         tools: Optional[pxt.tools] = None,
         reset: bool = False,
+        chat_kwargs: Optional[dict] = None,  # New: Separate kwargs for chat
+        tool_kwargs: Optional[dict] = None,  # New: Separate kwargs for tool calls
     ):
         """
         Initialize the Agent with conversational and tool-calling capabilities using Anthropic's API.
@@ -58,12 +60,16 @@ class Agent:
             n_latest_messages: Number of recent messages to include in context (default: 10)
             tools: Optional Pixeltable tools object for tool-calling
             reset: Whether to drop and recreate the directory (default: False)
+            chat_kwargs: Optional dict of kwargs for Anthropic messages API in chat mode
+            tool_kwargs: Optional dict of kwargs for Anthropic messages API in tool-calling mode
         """
         self.directory = agent_name
         self.system_prompt = system_prompt
         self.model = model
         self.n_latest_messages = n_latest_messages
         self.tools = tools
+        self.chat_kwargs = chat_kwargs or {}  # Default to empty dict if None
+        self.tool_kwargs = tool_kwargs or {}  # Default to empty dict if None
 
         # Setup Pixeltable environment
         if reset:
@@ -130,13 +136,14 @@ class Agent:
         )
         self.agent.add_computed_column(
             response=messages(
-                messages=self.agent.prompt, model=self.model, system=self.system_prompt
+                messages=self.agent.prompt,
+                model=self.model,
+                system=self.system_prompt,
+                **self.chat_kwargs  # Use chat-specific kwargs
             )
         )
         self.agent.add_computed_column(
-            agent_response=self.agent.response.content[
-                0
-            ].text  # Anthropic response structure
+            agent_response=self.agent.response.content[0].text  # Anthropic response structure
         )
 
     def _setup_tools_pipeline(self):
@@ -148,6 +155,7 @@ class Agent:
                 system=self.system_prompt,
                 messages=[{"role": "user", "content": self.tools_table.tool_prompt}],
                 tools=self.tools,
+                **self.tool_kwargs  # Use tool-specific kwargs
             )
         )
 
@@ -177,6 +185,7 @@ class Agent:
                 messages=[
                     {"role": "user", "content": self.tools_table.formatted_results}
                 ],
+                **self.tool_kwargs  # Use tool-specific kwargs
             )
         )
         self.tools_table.add_computed_column(

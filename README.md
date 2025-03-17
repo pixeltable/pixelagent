@@ -66,37 +66,6 @@ Code to come ...
 
 ---
 
-## Build your agent framework 📂
-
-```
-pixelagent/                # 🧠 Main package
-├── README.md              # 📜 This file
-├── pyproject.toml         # ⚙️ Build config
-├── requirements.txt       # 📋 Dependencies (just Pixeltable)
-├── agent_framework/       # 🧠 Main package
-│   ├── __init__.py        # 📦 Package setup
-│   ├── tables/            # 📊 Table defs
-│   │   ├── messages.py    # 💬 Messages + tool logic
-│   │   ├── tools.py       # 🔧 Tool registration
-│   │   └── memory.py      # 🧠 Memory tables
-│   ├── agents/            # 🤖 Agent logic
-│   │   ├── base.py        # 🏗️ Agent class
-│   │   ├── functional.py  # ⚡ Functional API
-│   └── utils/             # 🛠️ Helpers
-│       └── formatting.py  # ✂️ Tool result formatting
-├── examples/              # 🎓 Demos
-│   ├── basic_agent.py     # 🌱 Simple agent
-│   ├── memory_agent.py    # 🧠 With memory
-│   ├── knowledge_agent.py # 📚 With knowledge # TODO add reflection
-│   └── team_agent.py      # 👥 Multi-agent
-├── tests/                 # ✅ Unit tests
-│   ├── test_tables.py     # 📊 Table tests
-│   ├── test_tools.py      # 🔧 Tool tests
-│   └── test_agents.py     # 🤖 Agent tests
-```
-
----
-
 ### Callout: Get Started! 🎉
 Build exactly what you need with Pixelagent—Pixeltable paves the way for your innovation.
 

@@ -36,8 +36,10 @@ class Agent:
         system_prompt: str,
         model: str = "gpt-4o-mini",
         n_latest_messages: int = 10,
-        tools: Optional[pxt.tools] = None,  # Corrected to pxt.tools
+        tools: Optional[pxt.tools] = None,
         reset: bool = False,
+        chat_kwargs: Optional[dict] = None,  # New: Separate kwargs for chat
+        tool_kwargs: Optional[dict] = None,  # New: Separate kwargs for tool calls
     ):
         """
         Initialize the Agent with conversational and tool-calling capabilities.
@@ -49,12 +51,16 @@ class Agent:
             n_latest_messages: Number of recent messages to include in context (default: 10)
             tools: Optional Pixeltable tools object for tool-calling
             reset: Whether to drop and recreate the directory (default: False)
+            chat_kwargs: Optional dict of kwargs for OpenAI chat_completions API in chat mode
+            tool_kwargs: Optional dict of kwargs for OpenAI chat_completions API in tool-calling mode
         """
         self.directory = agent_name
         self.system_prompt = system_prompt
         self.model = model
         self.n_latest_messages = n_latest_messages
         self.tools = tools
+        self.chat_kwargs = chat_kwargs or {}  # Default to empty dict if None
+        self.tool_kwargs = tool_kwargs or {}  # Default to empty dict if None
 
         # Setup Pixeltable environment
         if reset:
@@ -128,7 +134,11 @@ class Agent:
             )
         )
         self.agent.add_computed_column(
-            response=chat_completions(messages=self.agent.prompt, model=self.model)
+            response=chat_completions(
+                messages=self.agent.prompt,
+                model=self.model,
+                **self.chat_kwargs  # Use chat-specific kwargs
+            )
         )
         self.agent.add_computed_column(
             agent_response=self.agent.response.choices[0].message.content
@@ -145,6 +155,7 @@ class Agent:
                 messages=messages,
                 tools=self.tools,
                 tool_choice=self.tools.choice(required=True),
+                **self.tool_kwargs  # Use tool-specific kwargs
             )
         )
 
@@ -164,7 +175,11 @@ class Agent:
             {"role": "user", "content": self.tools_table.tool_response_prompt},
         ]
         self.tools_table.add_computed_column(
-            final_response=chat_completions(model=self.model, messages=final_messages)
+            final_response=chat_completions(
+                model=self.model,
+                messages=final_messages,
+                **self.tool_kwargs  # Use tool-specific kwargs
+            )
         )
         self.tools_table.add_computed_column(
             tool_answer=self.tools_table.final_response.choices[0].message.content
@@ -204,7 +219,7 @@ class Agent:
         )
         return response
 
-    def tool_call(self, prompt: str) -> str:  # Renamed from tools to tool_call
+    def tool_call(self, prompt: str) -> str:
         """
         Execute a tool call based on the user's prompt and store in memory.
 
