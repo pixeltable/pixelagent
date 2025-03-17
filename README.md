@@ -1,3 +1,6 @@
+
+---
+
 # Pixelagent: An Agent Engineering Blueprint 
 
 Pixelagent is a data-first framework for building AI agents, powered by Pixeltable's AI infrastructure. It handles data orchestration, persistence, and multimodal support, letting you focus on agent logic.
@@ -39,6 +42,15 @@ response = agent.chat("Hi, how are you?")
 stock_info = agent.tool_call("Get NVIDIA and Apple stock price")
 ```
 
+## How It’s Built
+
+Want to see how Pixelagent’s `Agent` class comes together? We’ve broken it down into simple, step-by-step blueprints for both Anthropic and OpenAI. These guides show you how to build an agent with just chat and tool-calling, leveraging Pixeltable’s magic:
+
+- **[Build with Anthropic](examples/build-your-own-agent/anthropic/README.md)**: Learn how we craft an agent using Claude, with cost-saving tricks like skipping chat history in tool calls.
+- **[Build with OpenAI](examples/build-your-own-agent/openai/README.md)**: See how we use GPT models to create a lean, powerful agent with the same Pixeltable-driven efficiency.
+
+Each guide starts with a minimal core and shows how Pixeltable handles persistence, orchestration, and updates—giving you a foundation to customize and extend.
+
 ## Common Extensions 
 
 - **Memory**: Implement long-term memory systems
@@ -56,4 +68,6 @@ stock_info = agent.tool_call("Get NVIDIA and Apple stock price")
   - Tool integrations
   - State management
 
-Ready to start building? Let Pixelagent handle the infrastructure while you focus on innovation! 
+Ready to start building? Dive into the blueprints, tweak them to your needs, and let Pixelagent handle the infrastructure while you focus on innovation!
+
+---
