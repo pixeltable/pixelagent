@@ -1,183 +1,103 @@
-# 🤖 PixelAgent
+---
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-3.9+-blue.svg" alt="Python Version">
-  <img src="https://img.shields.io/badge/License-Apache_2.0-green.svg" alt="License">
-  <img src="https://img.shields.io/badge/Status-Alpha-orange.svg" alt="Status">
-</p>
+# Pixelagent: An Agent Engineering Blueprint 🛠️
 
-**PixelAgent** is a powerful, lightweight framework for building AI agents with persistent memory, built on top of [Pixeltable](https://github.com/pixeltable/pixeltable). Create, deploy, and monitor sophisticated AI agents with just a few lines of code. ⚡ **Lightning fast** with **lowest level access** to the underlying models and data.
+- **Purpose**: AI engineers need a flexible, simple framework for agent engineering.
+- **Solution**: Pixelagent offers automated data orchestration, persistence, low-level LLM access, and multimodal support.
+- **How It Works**: Engineer agents using tables.
 
-## ✨ Features
+---
 
-- ⚡ **Lightning Fast**: Optimized for speed and performance
-- 🔧 **Low-Level API**: Direct control over model parameters and behavior
-- 🧠 **Persistent Memory**: Every interaction is automatically stored in a Pixeltable database
-- 🔌 **Multi-Model Support**: Works with OpenAI and Anthropic models out of the box
-- 🛠️ **Tool Integration**: Easily add custom tools and functions to your agents
-- 📊 **Structured Outputs**: Define Pydantic models for type-safe, structured responses
-- 📝 **Conversation History**: Query and analyze full conversation history
-- 🖼️ **Multimodal Support**: Handle text, images, and other media types
-- 🔍 **Debugging Tools**: Built-in debugging and visualization capabilities
+## Why Pixelagent? 🌟
 
-## 🚀 Installation
+- **Core Idea**: Simplifies agent engineering with Pixeltable’s AI infrastructure. 
+- **Key Features**:
+  - Automates data orchestration and storage as the foundation.
+  - Handles LLM protocols, tool handshakes, and incremental updates—no manual persistence needed.
+  - Native multimodal support (text, images, and more).
+- **Your Role**: Define tables and columns; Pixeltable does the heavy lifting.
+- **Goal**: Empower you to DIY your own agent or framework by plugging together tables and columns.
+- **Not Another LLM Framework**: Pixelagent is a data-first framework focused on Agentic workflows. Pixelagent delivers on data orchestration and storage allowing you to focus on the Agent.
 
-```bash
-pip install pixelagent
+---
+
+## The Blueprint 🗺️
+
+- **Core Components**:
+  - LLM API Message Protocol (e.g., OpenAI, Anthropic)
+  - Tool-call handshake (call tools, get results)
+- **Common Extensions**:
+  - Looping (e.g., reflection)
+  - Memory (short/long-term)
+  - Knowledge (e.g., multimodal RAG)
+  - Teams (multi-agent setups)
+- **Tools**: Simple Python functions for easy, tailored extensions.
+
+---
+
+### Start building Agents 🤖
+
+Code to come ...
+
+---
+
+## What Makes Pixelagent Different? ⚡
+
+- **Data-First Philosophy**: Built on Pixeltable's AI infrastructure, providing automated data orchestration and persistence as the foundation.
+- **Lean and Focused**: Single dependency (Pixeltable) keeps the framework lightweight while delivering powerful capabilities.
+- **Declarative Data Model**: Engineer agents by defining tables and columns—Pixeltable handles the complex orchestration.
+- **Native Multimodal**: Built-in support for text, images, and beyond, perfect for advanced use cases like RAG.
+- **Simplified Engineering**: Focus on your agent logic while Pixeltable manages:
+  - Data persistence and retrieval
+  - LLM protocols and tool handshakes
+  - Incremental updates and state management
+  - Multimodal data handling
+
+---
+
+## Pixeltable's Edge 🚀
+
+- **What Sets It Apart**:
+  - **Built-in Data Power**: Declarative tables, indexes, and computed columns automate everything—no external DBs.
+  - **Lean Design**: Single dependency keeps it lightweight.
+  - **Multimodal Ready**: Native support for text, images, and beyond—perfect for advanced agents like RAG.
+
+- **Who It’s For**: Engineers who value control, efficiency, and a strong data foundation.
+
+---
+
+## Build your agent framework 📂
+
+```
+pixelagent/                # 🧠 Main package
+├── README.md              # 📜 This file
+├── pyproject.toml         # ⚙️ Build config
+├── requirements.txt       # 📋 Dependencies (just Pixeltable)
+├── agent_framework/       # 🧠 Main package
+│   ├── __init__.py        # 📦 Package setup
+│   ├── tables/            # 📊 Table defs
+│   │   ├── messages.py    # 💬 Messages + tool logic
+│   │   ├── tools.py       # 🔧 Tool registration
+│   │   └── memory.py      # 🧠 Memory tables
+│   ├── agents/            # 🤖 Agent logic
+│   │   ├── base.py        # 🏗️ Agent class
+│   │   ├── functional.py  # ⚡ Functional API
+│   └── utils/             # 🛠️ Helpers
+│       └── formatting.py  # ✂️ Tool result formatting
+├── examples/              # 🎓 Demos
+│   ├── basic_agent.py     # 🌱 Simple agent
+│   ├── memory_agent.py    # 🧠 With memory
+│   ├── knowledge_agent.py # 📚 With knowledge # TODO add reflection
+│   └── team_agent.py      # 👥 Multi-agent
+├── tests/                 # ✅ Unit tests
+│   ├── test_tables.py     # 📊 Table tests
+│   ├── test_tools.py      # 🔧 Tool tests
+│   └── test_agents.py     # 🤖 Agent tests
 ```
 
-### Install from GitHub
+---
 
-You can also install the latest development version directly from GitHub:
+### Callout: Get Started! 🎉
+Build exactly what you need with Pixelagent—Pixeltable paves the way for your innovation.
 
-```bash
-git clone https://github.com/pixeltable/pixelagent.git
-cd pixelagent
-pip install -e .
-```
-
-## 🏁 Quick Start
-
-### Basic Chat Agent
-
-```python
-from pixelagent.openai import Agent
-
-agent = Agent(
-    name="writer",
-    system_prompt="You are a brilliant writer.",
-    model="gpt-4o-mini",
-    reset=True  # Start with a fresh conversation history
-)
-
-result = agent.run("What is the capital of France?")
-print(result)
-```
-
-> **Note**: The `reset=True` parameter creates a new conversation history. Use `reset=False` (default) to continue from previous conversations.
-
-### Agent with Custom Tools
-
-```python
-from pixelagent.openai import Agent, tool
-
-@tool
-def search_web(keywords: str, max_results: int) -> str:
-    """Search the web for information."""
-    # Simplified example
-    results = [f"Result {i} for: {keywords}" for i in range(max_results)]
-    return "\n".join(results)
-
-agent = Agent(
-    name="researcher",
-    system_prompt="You are a research assistant that can search the web.",
-    model="gpt-4o-mini",
-    tools=[search_web]
-)
-
-response = agent.run("Find the latest news about AI")
-print(response)
-```
-
-### Structured Output
-
-```python
-from typing import List
-from pydantic import BaseModel
-from pixelagent.openai import Agent, tool
-
-class MovieRecommendation(BaseModel):
-    title: str
-    year: int
-    genres: List[str]
-    description: str
-    rating: float
-
-agent = Agent(
-    name="movie_recommender",
-    system_prompt="You recommend movies based on user preferences.",
-    model="gpt-4o-mini",
-    structured_output=MovieRecommendation,
-    reset=True
-)
-
-movie = agent.run("Recommend a sci-fi movie from the 90s")
-print(f"Title: {movie.title}, Year: {movie.year}, Rating: {movie.rating}")
-```
-
-### Multimodal Support
-
-```python
-from pixelagent.openai import Agent
-
-image_url = "https://example.com/image.jpg"
-agent = Agent(
-    name="image_analyzer",
-    system_prompt="You are an image analysis expert.",
-    model="gpt-4o-mini",
-    reset=True
-)
-
-response = agent.run("Analyze the image", attachments=image_url)
-print(response)
-```
-
-### 🧠 Persistent Memory
-
-PixelAgent's persistent memory is one of its most powerful features. By default, every interaction with your agent is automatically stored in a Pixeltable database, allowing your agent to:
-
-- Remember previous conversations and user preferences
-- Recall information shared in earlier interactions
-- Build context over time for more personalized responses
-- Access its memory even after application restarts
-
-The `reset` parameter is crucial for controlling this memory:
-- When `reset=True`: Creates a fresh conversation history, clearing previous memory
-- When `reset=False` (default): Continues from previous conversations, maintaining memory
-
-```python
-# Start with a fresh memory
-agent = Agent(name="assistant", reset=True)
-
-# Later, continue the same conversation
-agent = Agent(name="assistant", reset=False)  # Will remember previous interactions
-```
-
-This is particularly useful for development (reset=True) vs. production (reset=False) environments, or when you want to start a new conversation topic while preserving the agent's identity.
-
-
-## 📚 Documentation
-
-For more examples and detailed documentation, check out the `cookbook` directory:
-
-- **Basic Chat**: Simple conversation agents
-- **Tool Calling**: Agents with custom tools and functions
-- **Structured Outputs**: Type-safe responses with Pydantic
-- **Multimodal**: Working with images and other media types
-- **Persistent Memory**: Working with agent memory and conversation history
-
-
-## 🧩 How It Works
-
-PixelAgent uses Pixeltable as a persistent storage layer, automatically recording all conversations, tool calls, and agent states. This enables:
-
-1. **Persistence**: Conversations continue where they left off
-2. **Analysis**: Query your agent's history with SQL-like syntax
-3. **Monitoring**: Track performance and behavior over time
-4. **Debugging**: Identify and fix issues in your agent's reasoning
-
-The framework is designed for **lightning-fast performance** with **lowest-level access** to model internals, giving you complete control while maintaining simplicity.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-PixelAgent is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
-
-## 🔗 Links
-
-- [Pixeltable GitHub](https://github.com/pixeltable/pixeltable)
-- [Twitter](https://twitter.com/pixeltableai)
-- [Discord Community](https://discord.gg/pixeltable)
+---
