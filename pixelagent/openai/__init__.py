@@ -12,13 +12,13 @@ except ImportError:
 
 # Build final prompt with tool results
 @pxt.udf
-def create_tool_prompt(question: str, tool_outputs: list[dict]) -> str:
+async def create_tool_prompt(question: str, tool_outputs: list[dict]) -> str:
     return f"QUESTION:\n{question}\n\n RESULTS:\n{tool_outputs}"
 
 
 # Prompt builder
 @pxt.udf
-def create_messages(
+async def create_messages(
     past_context: list[dict], current_message: str, system_prompt: str
 ) -> list[dict]:
     messages = [{"role": "system", "content": system_prompt}]

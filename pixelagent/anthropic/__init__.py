@@ -12,7 +12,7 @@ except ImportError:
 
 # Format tool results
 @pxt.udf
-def format_tool_results(
+async def format_tool_results(
     original_prompt: str, tool_inputs: list[dict], tool_outputs: dict
 ) -> str:
     result = f"Original prompt: {original_prompt}\n"
@@ -30,7 +30,7 @@ def format_tool_results(
 
 # Prompt builder (no system prompt here)
 @pxt.udf
-def create_messages(past_context: list[dict], current_message: str) -> list[dict]:
+async def create_messages(past_context: list[dict], current_message: str) -> list[dict]:
     messages = [
         {"role": msg["role"], "content": msg["content"]} for msg in past_context
     ]
