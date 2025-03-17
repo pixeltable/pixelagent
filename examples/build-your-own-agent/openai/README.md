@@ -1,12 +1,20 @@
+# Building an OpenAI Agent in Pixeltable: A Step-by-Step Guide
 
----
+Learn how to build a persistent, tool-calling `Agent` with conversational memory using Pixeltable's data orchestration—powered by OpenAI's models. We'll start with a basic chat agent and then add tool-calling capabilities.
 
-### How to Build an OpenAI Agent in Pixeltable with OpenAI: A Step-by-Step Guide
+## Prerequisites
+- Install required packages:
+  ```bash
+  pip install pixeltable openai
+  ```
+- Set up your OpenAI API key:
+  ```bash
+  export OPENAI_API_KEY='your-api-key'
+  ```
 
-Here’s how to create an `Agent` class with Pixeltable using OpenAI’s API for chatting and tool-calling. We’ll keep it minimal and clear, giving you a blueprint to build on. Assumes you’ve installed Pixeltable and OpenAI (`pip install pixeltable openai`). Let’s get started!
+## Step 1: Set Up the Agent Basics
 
-#### Step 1: Set Up the Basics
-Start with a basic class. The `Agent` needs a name, a system prompt, and an OpenAI model (defaulting to `gpt-4o-mini`).
+First, let's create a basic `Agent` class with a name, system prompt, and model:
 
 ```python
 from datetime import datetime
@@ -15,24 +23,26 @@ import pixeltable as pxt
 class Agent:
     def __init__(self, agent_name: str, system_prompt: str, model: str = "gpt-4o-mini"):
         self.directory = agent_name  # Where data lives
-        self.system_prompt = system_prompt  # Agent’s behavior guide
+        self.system_prompt = system_prompt  # Agent's behavior guide
         self.model = model  # OpenAI model
 
         # Set up a Pixeltable directory
         pxt.create_dir(self.directory, if_exists="ignore")
 ```
 
-- **What’s happening?**
-  - `agent_name` creates a Pixeltable directory for the agent’s data.
-  - `system_prompt` defines the agent’s role (e.g., "You’re a helpful assistant").
-  - `pxt.create_dir` prepares the storage space, ignoring if it already exists.
+- **`agent_name`**: A unique ID (e.g., "my_agent") for storing the agent's data in Pixeltable.
+- **`system_prompt`**: Defines the agent's behavior (e.g., "You're a helpful assistant").
+- **`model`**: The OpenAI model to use, defaulting to "gpt-4o-mini".
+- **`pxt.create_dir`**: Creates a storage space for our agent's data.
 
----
+## Step 2: Add Memory for Chat History
 
-#### Step 2: Add Memory for Chat History
-The agent needs memory to track conversations. Let’s create a `memory` table.
+Next, let's add a memory table to store the conversation history:
 
 ```python
+from datetime import datetime
+import pixeltable as pxt
+
 class Agent:
     def __init__(self, agent_name: str, system_prompt: str, model: str = "gpt-4o-mini"):
         self.directory = agent_name
@@ -48,16 +58,19 @@ class Agent:
         )
 ```
 
-- **What’s happening?**
-  - The `memory` table stores `role` ("user" or "assistant"), `content` (message text), and `timestamp`.
-  - Pixeltable ensures persistence—no extra database setup needed.
+- **`memory` table**: Stores chat history with:
+  - `role`: Who sent the message ("user" or "assistant")
+  - `content`: The actual message text
+  - `timestamp`: When the message was sent
+- Pixeltable ensures this data persists automatically—no extra database setup needed.
 
----
+## Step 3: Build the Chat Pipeline
 
-#### Step 3: Build the Chat Pipeline
-Let’s add an `agent` table to handle user messages and generate responses using OpenAI’s `chat_completions`.
+Now let's create the chat functionality by adding an `agent` table to handle user messages and generate responses:
 
 ```python
+from datetime import datetime
+import pixeltable as pxt
 from pixeltable.functions.openai import chat_completions
 
 class Agent:
@@ -107,18 +120,35 @@ class Agent:
         return response
 ```
 
-- **What’s happening?**
-  - The `agent` table uses `chat_completions` to send the system prompt and user message to OpenAI.
-  - `add_computed_column` builds the pipeline: message → OpenAI → response text.
-  - The `chat` method saves the input and output to `memory` and returns the response.
-  - Pixeltable ties it all together seamlessly.
+What's happening here:
+- We've added an `agent` table with:
+  - `user_message`: The input from the user
+  - `timestamp`: When the message was received
+- **Chat pipeline**:
+  - `response`: Uses OpenAI's `chat_completions` to send the system prompt and user message to the API
+  - `agent_response`: Extracts the generated text from the API response
+- **`chat` method**:
+  1. Saves the user's message to memory
+  2. Processes the message through the agent table
+  3. Extracts the response
+  4. Saves the response to memory
+  5. Returns the response to the user
 
----
-
-#### Step 4: Add Tool-Calling
-Now, let’s add tool-calling with a `tools` table. We’ll avoid sending chat history to save on token costs, just like before.
+### Test the Chat Agent
 
 ```python
+agent = Agent("chatbot", "You're a friendly assistant.")
+print(agent.chat("Hi!"))  # "Hello! How can I help you today?"
+```
+
+## Step 4: Add Tool-Calling Capabilities
+
+Now let's extend our agent to support tool-calling by adding a `tools` parameter and a dedicated `tools_table`:
+
+```python
+from datetime import datetime
+from typing import Optional
+import pixeltable as pxt
 from pixeltable.functions.openai import chat_completions, invoke_tools
 
 class Agent:
@@ -140,6 +170,8 @@ class Agent:
             {"user_message": pxt.String, "timestamp": pxt.Timestamp},
             if_exists="ignore"
         )
+        
+        # Tools table (if tools provided)
         if self.tools:
             self.tools_table = pxt.create_table(
                 f"{self.directory}.tools",
@@ -162,7 +194,7 @@ class Agent:
                 tool_output=invoke_tools(self.tools, self.tools_table.initial_response)
             )
             self.tools_table.add_computed_column(
-                tool_answer=self.tool_output  # Simplified output
+                tool_answer=self.tools_table.tool_output  # Simplified output
             )
         
         # Chat pipeline
@@ -203,19 +235,18 @@ class Agent:
         return tool_answer
 ```
 
-- **What’s happening?**
-  - `tools` is optional (e.g., from `pxt.tools()`).
-  - The `tools_table` pipeline:
-    1. `chat_completions` sends only the `tool_prompt` and system prompt—no chat history—to OpenAI with tools enabled.
-    2. `invoke_tools` runs the tool based on OpenAI’s response.
-    3. `tool_answer` holds the result (simplified here).
-  - **Why no chat history?** Tool-calling hits the LLM API twice (prompt → tool → response), and OpenAI charges by token. Skipping history cuts costs, and we sync it via `memory` for chat to use later.
-  - `tool_call` saves both prompt and result to `memory`.
+Key additions in this step:
+- **Tools parameter**: The `__init__` method now accepts an optional `tools` parameter.
+- **Tools table**: Created only if tools are provided.
+- **Tools pipeline**:
+  1. `initial_response`: Sends only the system prompt and tool prompt (no chat history) to OpenAI with `tool_choice` set to require using a tool.
+  2. `tool_output`: Uses `invoke_tools` to execute the tool based on OpenAI's response.
+  3. `tool_answer`: Captures the tool result for the user.
+- **`tool_call` method**: Processes tool calls while keeping memory in sync.
 
----
+Note that we don't send chat history with tool calls to save on tokens, since OpenAI charges based on token usage. The memory table still keeps track of the full conversation.
 
-#### Step 5: Test It Out!
-Try your OpenAI-powered agent:
+### Test the Tool-Calling
 
 ```python
 # Define a tool
@@ -223,45 +254,33 @@ Try your OpenAI-powered agent:
 def say_hello(name: str) -> str:
     return f"Hello, {name}!"
 
-# Create the agent
+# Create agent with tools
 tools = pxt.tools(say_hello)
-agent = Agent(
-    agent_name="my_agent",
-    system_prompt="You’re a friendly assistant.",
-    tools=tools
-)
+agent = Agent("toolbot", "You're a helpful assistant.", tools=tools)
 
-# Test it
-print(agent.chat("Hi there!"))  # "Hello! How can I help you today?"
-print(agent.tool_call("Say hello to Bob"))  # "Hello, Bob!"
+# Test chat and tools
+print(agent.chat("Hi!"))  # "Hello! How can I help you today?"
+print(agent.tool_call("Say hello to Alice"))  # "Hello, Alice!"
 ```
 
----
+## Why This Works
 
-### Why This Works
-- **Chat**: The `agent` table and `chat` method handle conversations, with `memory` tracking history.
-- **Tool-Calling**: The `tools_table` and `tool_call` method enable tool use, managed by Pixeltable.
+- **Chat**: The agent table and chat method handle conversations, with memory tracking history.
+- **Tools**: The tools table and tool_call method enable tool use, optimized for token usage.
 - **Pixeltable Magic**: Automates data flow with tables and computed columns.
 
-### Extend It!
-Add these as needed:
-- **Context**: Limit `memory` to the last 10 messages with a query.
-- **Formatting**: Use `create_tool_prompt` to format tool results.
-- **More Tools**: Add multiple tools to `pxt.tools()`.
+## Why Pixeltable Rocks for Agents
 
----
-
-### Why Pixeltable is the Agent Framework to Build On
-Pixeltable is your agent-building superpower. Here’s why:
-
-- **Persistence**: Chat and tool data are auto-saved in tables. No manual database work—Pixeltable keeps it all durable and queryable.
-
-- **Data Orchestration**: It manages tool-call handshakes (e.g., `invoke_tools`) and async OpenAI calls. Pipelines flow effortlessly, and it skips chat history in tool-calling to save tokens while syncing via memory.
-
+- **Persistence**: Chat and tool data are automatically saved in tables. No manual database work—Pixeltable keeps everything durable and queryable.
+- **Data Orchestration**: It manages tool-call handshakes (e.g., `invoke_tools`) and async OpenAI calls. Pipelines flow effortlessly.
+- **Token Efficiency**: By skipping chat history in tool-calling while still syncing via memory, you save on token costs.
 - **Incremental Updates**: `.insert` triggers event-driven processing—add data, and only the new stuff updates. Fast, efficient, and scalable.
 
-Pixeltable’s your agent’s OS: it handles state, optimizes costs (like token trimming), and frees you to innovate. Build chats, tools, or teams—Pixeltable’s got you covered.
+## Next Steps
 
----
+- Add context window management by limiting memory to recent messages
+- Create more sophisticated tools and chain them together
+- Add better formatting for tool results
+- Build specialized agents for different domains
 
-Now you’ve got an OpenAI-powered blueprint! Tweak it, add tools, or scale it up. Pixeltable does the heavy lifting—go create something amazing!
+You've built a powerful OpenAI-powered agent with minimal code! All the code is here—ready to tweak and scale up for your specific use cases. Happy building!
