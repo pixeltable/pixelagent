@@ -10,13 +10,13 @@ embed_model = sentence_transformer.using(
 
 # First Create the Agent
 agent = Agent(
-    agent_name="long_term_bot",
+    agent_name="semantic_bot",
     system_prompt="You’re my assistant.",
     reset=False
 )
 
 # Get the Agents Memory table and add embedding index to the content
-memory = pxt.get_table("long_term_bot.memory")
+memory = pxt.get_table("semantic_bot.memory")
 
 @pxt.udf
 async def concatenate_content(role: pxt.String, content: pxt.String, timestamp: pxt.Timestamp) -> str:
