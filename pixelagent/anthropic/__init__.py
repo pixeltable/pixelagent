@@ -74,6 +74,7 @@ class Agent:
         # Setup Pixeltable environment
         if reset:
             pxt.drop_dir(self.directory, force=True)
+
         pxt.create_dir(self.directory, if_exists="ignore")
 
         # Initialize tables
@@ -129,10 +130,12 @@ class Agent:
 
         # Chat pipeline
         self.agent.add_computed_column(
-            memory_context=get_recent_memory(self.agent.timestamp)
+            memory_context=get_recent_memory(self.agent.timestamp),
+            if_exists="ignore"
         )
         self.agent.add_computed_column(
-            prompt=create_messages(self.agent.memory_context, self.agent.user_message)
+            prompt=create_messages(self.agent.memory_context, self.agent.user_message),
+            if_exists="ignore"
         )
         self.agent.add_computed_column(
             response=messages(
@@ -140,10 +143,12 @@ class Agent:
                 model=self.model,
                 system=self.system_prompt,
                 **self.chat_kwargs  # Use chat-specific kwargs
-            )
+            ),
+            if_exists="ignore"
         )
         self.agent.add_computed_column(
-            agent_response=self.agent.response.content[0].text  # Anthropic response structure
+            agent_response=self.agent.response.content[0].text,  # Anthropic response structure
+            if_exists="ignore"
         )
 
     def _setup_tools_pipeline(self):
@@ -156,17 +161,20 @@ class Agent:
                 messages=[{"role": "user", "content": self.tools_table.tool_prompt}],
                 tools=self.tools,
                 **self.tool_kwargs  # Use tool-specific kwargs
-            )
+            ),
+            if_exists="ignore"
         )
 
         # Extract tool input from response
         self.tools_table.add_computed_column(
-            tool_input=self.tools_table.initial_response.content
+            tool_input=self.tools_table.initial_response.content,
+            if_exists="ignore"
         )
 
         # Invoke tools
         self.tools_table.add_computed_column(
-            tool_output=invoke_tools(self.tools, self.tools_table.initial_response)
+            tool_output=invoke_tools(self.tools, self.tools_table.initial_response),
+            if_exists="ignore"
         )
 
         self.tools_table.add_computed_column(
@@ -174,7 +182,8 @@ class Agent:
                 self.tools_table.tool_prompt,
                 self.tools_table.tool_input,
                 self.tools_table.tool_output,
-            )
+            ),
+            if_exists="ignore"
         )
 
         # Final response from LLM
@@ -186,10 +195,12 @@ class Agent:
                     {"role": "user", "content": self.tools_table.formatted_results}
                 ],
                 **self.tool_kwargs  # Use tool-specific kwargs
-            )
+            ),
+            if_exists="ignore"
         )
         self.tools_table.add_computed_column(
-            tool_answer=self.tools_table.final_response.content[0].text
+            tool_answer=self.tools_table.final_response.content[0].text,
+            if_exists="ignore"
         )
 
     def chat(self, message: str) -> str:

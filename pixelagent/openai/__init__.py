@@ -124,24 +124,29 @@ class Agent:
 
         # Chat pipeline
         self.agent.add_computed_column(
-            memory_context=get_recent_memory(self.agent.timestamp)
+            memory_context=get_recent_memory(self.agent.timestamp),
+            if_exists="ignore",        
         )
+
         self.agent.add_computed_column(
             prompt=create_messages(
                 self.agent.memory_context,
                 self.agent.user_message,
                 self.agent.system_prompt,
-            )
+            ),
+            if_exists="ignore",
         )
         self.agent.add_computed_column(
             response=chat_completions(
                 messages=self.agent.prompt,
                 model=self.model,
                 **self.chat_kwargs  # Use chat-specific kwargs
-            )
+            ),
+            if_exists="ignore",
         )
         self.agent.add_computed_column(
-            agent_response=self.agent.response.choices[0].message.content
+            agent_response=self.agent.response.choices[0].message.content,
+            if_exists="ignore",
         )
 
     def _setup_tools_pipeline(self):
@@ -156,18 +161,21 @@ class Agent:
                 tools=self.tools,
                 tool_choice=self.tools.choice(required=True),
                 **self.tool_kwargs  # Use tool-specific kwargs
-            )
+            ),
+            if_exists="ignore",
         )
 
         # Invoke tools
         self.tools_table.add_computed_column(
-            tool_output=invoke_tools(self.tools, self.tools_table.initial_response)
+            tool_output=invoke_tools(self.tools, self.tools_table.initial_response),
+            if_exists="ignore",
         )
 
         self.tools_table.add_computed_column(
             tool_response_prompt=create_tool_prompt(
                 self.tools_table.tool_prompt, self.tools_table.tool_output
-            )
+            ),
+            if_exists="ignore",
         )
 
         # Final response from LLM
@@ -179,10 +187,12 @@ class Agent:
                 model=self.model,
                 messages=final_messages,
                 **self.tool_kwargs  # Use tool-specific kwargs
-            )
+            ),
+            if_exists="ignore",
         )
         self.tools_table.add_computed_column(
-            tool_answer=self.tools_table.final_response.choices[0].message.content
+            tool_answer=self.tools_table.final_response.choices[0].message.content,
+            if_exists="ignore",
         )
 
     def chat(self, message: str) -> str:
