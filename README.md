@@ -1,72 +1,59 @@
----
+# Pixelagent: An Agent Engineering Blueprint 
 
-# Pixelagent: An Agent Engineering Blueprint 🛠️
+Pixelagent is a data-first framework for building AI agents, powered by Pixeltable's AI infrastructure. It handles data orchestration, persistence, and multimodal support, letting you focus on agent logic.
 
-- **Purpose**: AI engineers need a flexible, simple framework for agent engineering.
-- **Solution**: Pixelagent offers automated data orchestration, persistence, low-level LLM access, and multimodal support.
-- **How It Works**: Engineer agents using tables.
+## Key Features 
 
----
+- **Automated Data Orchestration**: Built on Pixeltable's infrastructure for seamless data management
+- **Native Multimodal**: Built-in support for text, images, and beyond
+- **Declarative Model**: Define tables and columns; Pixeltable handles the rest
+- **LLM Protocol Support**: Handles OpenAI and Anthropic message protocols
+- **Tool Integration**: Built-in tool-call handshake system
 
-## Why Pixelagent? 🌟
+## Quick Start 
 
-- **Core Idea**: Simplifies agent engineering with Pixeltable’s AI infrastructure. 
-- **Key Features**:
-  - Automates data orchestration and storage as the foundation.
-  - Handles LLM protocols, tool handshakes, and incremental updates—no manual persistence needed.
-  - Native multimodal support (text, images, and more).
-- **Your Role**: Define tables and columns; Pixeltable does the heavy lifting.
-- **Goal**: Empower you to DIY your own agent or framework by plugging together tables and columns.
-- **Not Another LLM Framework**: Pixelagent is a data-first framework focused on Agentic workflows. Pixelagent delivers on data orchestration and storage allowing you to focus on the Agent.
+```python
+from pixelagent.openai import Agent
+import pixeltable as pxt
 
----
+# Define a tool
+@pxt.udf
+def stock_price(ticker: str) -> dict:
+    """Retrieve the current stock price for a given ticker symbol."""
+    import yfinance as yf
+    stock = yf.Ticker(ticker)
+    info = stock.info
+    return {"price": info.get("regularMarketPrice", "N/A")}
 
-## The Blueprint 🗺️
+# Create tools and agent
+tools = pxt.tools(stock_price)
+agent = Agent(
+    agent_name="finance_bot",
+    system_prompt="You're my assistant.",
+    tools=tools,
+    reset=True
+)
 
-- **Core Components**:
-  - LLM API Message Protocol (e.g., OpenAI, Anthropic)
-  - Tool-call handshake (call tools, get results)
-- **Common Extensions**:
-  - Looping (e.g., reflection)
-  - Memory (short/long-term)
-  - Knowledge (e.g., multimodal RAG)
-  - Teams (multi-agent setups)
-- **Tools**: Simple Python functions for easy, tailored extensions.
+# Chat and use tools
+response = agent.chat("Hi, how are you?")
+stock_info = agent.tool_call("Get NVIDIA and Apple stock price")
+```
 
----
+## Common Extensions 
 
-### Start building Agents 🤖
+- **Memory**: Implement long-term memory systems
+- **Knowledge**: Build RAG systems with multimodal support
+- **Teams**: Create multi-agent collaborative setups
+- **Reflection**: Add self-improvement loops
 
-Code to come ...
+## Why Choose Pixelagent? 
 
----
-
-## What Makes Pixelagent Different? ⚡
-
-- **Data-First Philosophy**: Built on Pixeltable's AI infrastructure, providing automated data orchestration and persistence as the foundation.
-- **Lean and Focused**: Single dependency (Pixeltable) keeps the framework lightweight while delivering powerful capabilities.
-- **Declarative Data Model**: Engineer agents by defining tables and columns—Pixeltable handles the complex orchestration.
-- **Native Multimodal**: Built-in support for text, images, and beyond, perfect for advanced use cases like RAG.
-- **Simplified Engineering**: Focus on your agent logic while Pixeltable manages:
+- **Data-First**: Focus on robust data management and persistence
+- **Engineering Freedom**: Build exactly what you need without framework constraints
+- **Simplified Workflow**: Automated handling of:
   - Data persistence and retrieval
-  - LLM protocols and tool handshakes
-  - Incremental updates and state management
-  - Multimodal data handling
+  - LLM protocols
+  - Tool integrations
+  - State management
 
----
-
-## Pixeltable's Edge 🚀
-
-- **What Sets It Apart**:
-  - **Built-in Data Power**: Declarative tables, indexes, and computed columns automate everything—no external DBs.
-  - **Lean Design**: Single dependency keeps it lightweight.
-  - **Multimodal Ready**: Native support for text, images, and beyond—perfect for advanced agents like RAG.
-
-- **Who It’s For**: Engineers who value control, efficiency, and a strong data foundation.
-
----
-
-### Callout: Get Started! 🎉
-Build exactly what you need with Pixelagent—Pixeltable paves the way for your innovation.
-
----
+Ready to start building? Let Pixelagent handle the infrastructure while you focus on innovation! 
