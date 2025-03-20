@@ -5,7 +5,6 @@ from uuid import uuid4
 import pixeltable as pxt
 
 try:
-    import anthropic
     from pixeltable.functions.anthropic import invoke_tools, messages
 except ImportError:
     raise ImportError("anthropic not found; run `pip install anthropic`")

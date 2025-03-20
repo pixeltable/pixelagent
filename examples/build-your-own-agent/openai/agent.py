@@ -6,7 +6,6 @@ import pixeltable as pxt
 import pixeltable.functions as pxtf
 
 try:
-    import openai
     from pixeltable.functions.openai import chat_completions, invoke_tools
 except ImportError:
     raise ImportError("openai not found; run `pip install openai`")
