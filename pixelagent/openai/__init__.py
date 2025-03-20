@@ -1,30 +1,23 @@
 from datetime import datetime
 from typing import Optional
-import uuid  # Import UUID module
+import uuid
 
 import pixeltable as pxt
+import pixeltable.functions as pxtf
 
 try:
     import openai
     from pixeltable.functions.openai import chat_completions, invoke_tools
 except ImportError:
-    raise ImportError("openai not found, run `pip install openai`")
+    raise ImportError("openai not found; run `pip install openai`")
 
-
-# Build final prompt with tool results
-@pxt.udf
-def create_tool_prompt(question: str, tool_outputs: list[dict]) -> str:
-    return f"QUESTION:\n{question}\n\n RESULTS:\n{tool_outputs}"
-
-
-# Prompt builder
 @pxt.udf
 def create_messages(
-    past_context: list[dict], current_message: str, system_prompt: str
+    memory_context: list[dict], current_message: str, system_prompt: str
 ) -> list[dict]:
     messages = [{"role": "system", "content": system_prompt}]
     messages.extend(
-        {"role": msg["role"], "content": msg["content"]} for msg in past_context
+        {"role": msg["role"], "content": msg["content"]} for msg in memory_context
     )
     messages.append({"role": "user", "content": current_message})
     return messages
@@ -52,9 +45,10 @@ class Agent:
 
         if reset:
             pxt.drop_dir(self.directory, force=True)
+
         pxt.create_dir(self.directory, if_exists="ignore")
 
-        self._setup_tables()
+        self.__setup_tables()
 
         self.memory = pxt.get_table(f"{self.directory}.memory")
         self.agent = pxt.get_table(f"{self.directory}.agent")
@@ -62,12 +56,11 @@ class Agent:
             pxt.get_table(f"{self.directory}.tools") if self.tools else None
         )
 
-    def _setup_tables(self):
-        # Memory table
+    def __setup_tables(self):
         self.memory = pxt.create_table(
             f"{self.directory}.memory",
             {
-                "uuid": pxt.String,
+                "message_id": pxt.String,
                 "role": pxt.String,
                 "content": pxt.String,
                 "timestamp": pxt.Timestamp,
@@ -75,11 +68,10 @@ class Agent:
             if_exists="ignore",
         )
 
-        # Agent table
         self.agent = pxt.create_table(
             f"{self.directory}.agent",
             {
-                "uuid": pxt.String,
+                "message_id": pxt.String,
                 "user_message": pxt.String,
                 "timestamp": pxt.Timestamp,
                 "system_prompt": pxt.String,
@@ -91,13 +83,13 @@ class Agent:
             self.tools_table = pxt.create_table(
                 f"{self.directory}.tools",
                 {
-                    "uuid": pxt.String,
+                    "tool_invoke_id": pxt.String,
                     "tool_prompt": pxt.String,
                     "timestamp": pxt.Timestamp,
                 },
                 if_exists="ignore",
             )
-            self._setup_tools_pipeline()
+            self.__setup_tools_table()
 
         self._setup_chat_pipeline()
 
@@ -136,35 +128,30 @@ class Agent:
             if_exists="ignore",
         )
 
-    def _setup_tools_pipeline(self):
-        messages = [{"role": "user", "content": self.tools_table.tool_prompt}]
+    def __setup_tools_table(self):
         self.tools_table.add_computed_column(
             initial_response=chat_completions(
                 model=self.model,
-                messages=messages,
+                messages=[{"role": "user", "content": self.tools_table.tool_prompt}],
                 tools=self.tools,
-                tool_choice=self.tools.choice(required=True),
                 **self.tool_kwargs
             ),
             if_exists="ignore",
-        )
+        )        
         self.tools_table.add_computed_column(
             tool_output=invoke_tools(self.tools, self.tools_table.initial_response),
             if_exists="ignore",
         )
         self.tools_table.add_computed_column(
-            tool_response_prompt=create_tool_prompt(
-                self.tools_table.tool_prompt, self.tools_table.tool_output
-            ),
+            tool_response_prompt=pxtf.string.format("{1}: {2}", self.tools_table.tool_prompt, self.tools_table.tool_output),
             if_exists="ignore",
         )
-        final_messages = [
-            {"role": "user", "content": self.tools_table.tool_response_prompt},
-        ]
         self.tools_table.add_computed_column(
             final_response=chat_completions(
                 model=self.model,
-                messages=final_messages,
+                messages=[
+                    {"role": "user", "content": self.tools_table.tool_response_prompt},
+                ],
                 **self.tool_kwargs
             ),
             if_exists="ignore",
@@ -181,7 +168,7 @@ class Agent:
         self.memory.insert(
             [
                 {
-                    "uuid": generated_uuid,
+                    "message_id": generated_uuid,
                     "role": "user",
                     "content": message,
                     "timestamp": now,
@@ -191,7 +178,7 @@ class Agent:
         self.agent.insert(
             [
                 {
-                    "uuid": generated_uuid,
+                    "message_id": generated_uuid,
                     "user_message": message,
                     "timestamp": now,
                     "system_prompt": self.system_prompt,
@@ -209,7 +196,7 @@ class Agent:
         self.memory.insert(
             [
                 {
-                    "uuid": str(uuid.uuid4()),
+                    "message_id": str(uuid.uuid4()),
                     "role": "assistant",
                     "content": response,
                     "timestamp": now,
@@ -223,12 +210,12 @@ class Agent:
             return "No tools configured for this agent."
 
         now = datetime.now()
-        generated_uuid = str(uuid.uuid4())  # Generate a unique UUID
+        generated_uuid = str(uuid.uuid4())
 
         self.memory.insert(
             [
                 {
-                    "uuid": generated_uuid,
+                    "message_id": generated_uuid,
                     "role": "user",
                     "content": prompt,
                     "timestamp": now,
@@ -238,7 +225,7 @@ class Agent:
         self.tools_table.insert(
             [
                 {
-                    "uuid": generated_uuid,
+                    "tool_invoke_id": generated_uuid,
                     "tool_prompt": prompt,
                     "timestamp": now,
                 }
@@ -255,7 +242,7 @@ class Agent:
         self.memory.insert(
             [
                 {
-                    "uuid": str(uuid.uuid4()),
+                    "message_id": str(uuid.uuid4()),
                     "role": "assistant",
                     "content": tool_answer,
                     "timestamp": now,

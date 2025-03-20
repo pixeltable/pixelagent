@@ -2,6 +2,7 @@
 
 from pixelagent.anthropic import Agent
 import pixeltable as pxt
+import pixeltable.functions as pxtf
 from pixeltable.functions.huggingface import sentence_transformer
 
 embed_model = sentence_transformer.using(
@@ -18,12 +19,8 @@ agent = Agent(
 # Get the Agents Memory table and add embedding index to the content
 memory = pxt.get_table("semantic_bot.memory")
 
-@pxt.udf
-async def concatenate_content(role: pxt.String, content: pxt.String, timestamp: pxt.Timestamp) -> str:
-    return f"{str(timestamp)}: {role}: {content}"
-
 memory.add_computed_column(
-    user_content=concatenate_content(memory.role, memory.content, memory.timestamp),
+    user_content=pxtf.string.format("{0}: {1}: {2}", memory.timestamp, memory.role, memory.content),
     if_exists="ignore"
 )
 
@@ -35,10 +32,9 @@ def semantic_search(query: str) -> list[dict]:
             .select(memory.user_content, sim=sim)
             .limit(5)
             .collect())
-    result_str = ""
-    for i, row in enumerate(res.to_pandas().itertuples(), 1):
-        result_str += f"Previous conversations: {row.user_content}\n"
+    result_str = "\n".join(f"Previous conversations: {user_content}" for user_content in res['user_content'])
     return result_str
+
 
 # Load some data into memory
 agent.chat("Hello my name is joe")

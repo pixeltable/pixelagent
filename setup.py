@@ -9,5 +9,5 @@ setup(
     ],
     python_requires=">=3.9",
     description="A modular AI agent framework supporting OpenAI and Anthropic models",
-    author="Jacob Weiss",
+    author="Pixeltable, Inc.",
 )
