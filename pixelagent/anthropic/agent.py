@@ -21,7 +21,7 @@ class Agent(BaseAgent):
         agent_name: str,
         system_prompt: str,
         model: str = "claude-3-5-sonnet-latest",
-        n_latest_messages: int = 10,
+        n_latest_messages: Optional[int] = 10,
         tools: Optional[pxt.tools] = None,
         reset: bool = False,
         chat_kwargs: Optional[dict] = None,
@@ -41,12 +41,14 @@ class Agent(BaseAgent):
     def _setup_chat_pipeline(self):
         @pxt.query
         def get_recent_memory(current_timestamp: pxt.Timestamp) -> list[dict]:
-            return (
+            query = (
                 self.memory.where(self.memory.timestamp < current_timestamp)
                 .order_by(self.memory.timestamp, asc=False)
                 .select(role=self.memory.role, content=self.memory.content)
-                .limit(self.n_latest_messages)
             )
+            if self.n_latest_messages is not None:
+                query = query.limit(self.n_latest_messages)
+            return query
 
         self.agent.add_computed_column(
             memory_context=get_recent_memory(self.agent.timestamp), if_exists="ignore"

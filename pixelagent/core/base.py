@@ -12,7 +12,7 @@ class BaseAgent(ABC):
         agent_name: str,
         system_prompt: str,
         model: str,
-        n_latest_messages: int = 10,
+        n_latest_messages: Optional[int] = 10,
         tools: Optional[pxt.tools] = None,
         reset: bool = False,
         chat_kwargs: Optional[dict] = None,
