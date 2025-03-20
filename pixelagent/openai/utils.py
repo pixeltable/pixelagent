@@ -1,5 +1,6 @@
 import pixeltable as pxt
 
+
 @pxt.udf
 def create_messages(
     system_prompt: str, memory_context: list[dict], current_message: str
