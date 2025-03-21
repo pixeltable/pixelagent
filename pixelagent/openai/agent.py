@@ -19,7 +19,7 @@ class Agent(BaseAgent):
         agent_name: str,
         system_prompt: str,
         model: str = "gpt-4o-mini",
-        n_latest_messages: int = 10,
+        n_latest_messages: Optional[int] = 10,
         tools: Optional[pxt.tools] = None,
         reset: bool = False,
         chat_kwargs: Optional[dict] = None,
@@ -71,7 +71,7 @@ class Agent(BaseAgent):
             if_exists="ignore",
         )
 
-    def _setup_tools_table(self):
+    def _setup_tools_pipeline(self):
         self.tools_table.add_computed_column(
             initial_response=chat_completions(
                 model=self.model,

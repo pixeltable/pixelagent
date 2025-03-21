@@ -74,7 +74,7 @@ class Agent(BaseAgent):
             agent_response=self.agent.response.content[0].text, if_exists="ignore"
         )
 
-    def _setup_tools_table(self):
+    def _setup_tools_pipeline(self):
         self.tools_table.add_computed_column(
             initial_response=messages(
                 model=self.model,
