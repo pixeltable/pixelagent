@@ -3,7 +3,7 @@
 
 # Pixelagent: An Agent Engineering Blueprint 
 
-Pixelagent is a data-first framework for building AI agents, powered by Pixeltable's AI infrastructure. It handles data orchestration, persistence, and multimodal support, letting you focus on agent logic.
+Pixelagent is a data-first agent framework for building AI agents, powered by Pixeltable's AI data infrastructure. It handles data orchestration, persistence, and multimodal support, letting you focus on agent logic.
 
 ## Key Features 
 
@@ -66,6 +66,8 @@ Each guide starts with a minimal core and shows how Pixeltable handles persisten
 - **Knowledge**: Build RAG systems with multimodal support
 - **Teams**: Create multi-agent collaborative setups
 - **Reflection**: Add self-improvement loops
+- **Planning**: Add planning loops
+- **Multimodal**: Support images, videos, and other media types
 
 ## Why Choose Pixelagent? 
 
