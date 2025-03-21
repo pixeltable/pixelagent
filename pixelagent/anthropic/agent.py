@@ -1,15 +1,3 @@
-"""
-Tutorial: Building an Anthropic Agent with Pixeltable
-
-This module implements an AI agent powered by Anthropic's Claude models with persistent memory and tool execution.
-The agent inherits from BaseAgent which provides common functionality for memory management and chat pipelines.
-
-Key Features:
-- Persistent conversation memory with optional message limits
-- Tool execution support with Claude's function calling
-- Automatic data orchestration using Pixeltable
-"""
-
 from typing import Optional
 
 import pixeltable as pxt
