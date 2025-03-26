@@ -2,7 +2,7 @@ import re
 from datetime import datetime
 
 import pixeltable as pxt
-from pixelagent.openai import Agent
+from pixelagent.anthropic import Agent
 
 import yfinance as yf
 
@@ -18,6 +18,8 @@ react_tools = ["stock_info"]
 REACT_SYSTEM_PROMPT = """
 Today is {date}
 
+IMPORTANT: You have {max_steps} maximum steps. You are on step {step}.
+
 Follow this EXACT step-by-step reasoning and action pattern:
 
 1. THOUGHT: Think about what information you need to answer the user's question.
@@ -26,7 +28,7 @@ Follow this EXACT step-by-step reasoning and action pattern:
 Available tools:
 {tools}
 
-IMPORTANT: You have {max_steps} maximum steps. You are on step {step}.
+
 Always structure your response with these exact headings:
 
 THOUGHT: [your reasoning]
@@ -65,8 +67,7 @@ while step <= max_steps:
     
     agent = Agent(
         agent_name="financial_analyst_react",
-        system_prompt=react_system_prompt, # Dynamic System Prompt
-        tools=pxt.tools(stock_info),
+        system_prompt=react_system_prompt, # Dynamic React System Prompt
         reset=False, # maintains persistent memory
         # n_latest_messages=10, # define N rolling memory or it defaults to infinite memory
     )
@@ -85,7 +86,12 @@ while step <= max_steps:
     call_tool = [tool for tool in react_tools if tool.lower() in action.lower()]
     if call_tool:
         # Agent has access to both tools and can call them in parallel if need be.
-        tool_call_result = agent.tool_call(question)
+        tool_agent = Agent(
+            agent_name="financial_analyst_react",
+            system_prompt="Use your tools to answer the user's question.",
+            tools=pxt.tools(stock_info),
+        )        
+        tool_call_result = tool_agent.tool_call(question)
         print("Tool Call Result:\n")
         print(tool_call_result)
     
@@ -95,12 +101,11 @@ while step <= max_steps:
         break
 
 # Create final answer
-agent = Agent(
+summary_agent = Agent(
     agent_name="financial_analyst_react",
     system_prompt="Answer the user's question. Use your previous chat history to answer the question.",
-    reset=False
 )
 
-final_answer = agent.chat(question)
+final_answer = summary_agent.chat(question)
 print("Final Answer:")
 print(final_answer)
