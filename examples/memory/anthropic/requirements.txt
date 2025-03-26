@@ -1,0 +1,5 @@
+pixeltable
+tiktoken
+anthropic
+spacy
+sentence-transformers

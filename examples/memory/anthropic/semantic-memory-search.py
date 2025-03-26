@@ -1,7 +1,4 @@
-# pip install sentence-transformers
-
 import pixeltable as pxt
-import pixeltable.functions as pxtf
 from pixeltable.functions.huggingface import sentence_transformer
 
 from pixelagent.anthropic import Agent
