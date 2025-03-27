@@ -12,6 +12,10 @@ Pixelagent is a data-first agent framework for building AI agents, powered by Pi
 
 ## Quick Start 
 
+```bash
+pip install pixelagent anthropic
+```
+
 ```python
 import pixeltable as pxt
 from pixelagent.anthropic import Agent

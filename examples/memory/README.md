@@ -16,6 +16,10 @@ Pixelagent's memory system demonstrates the power of our data-first approach to 
 
 The simplest way to access agent memory is through the Pixeltable table interface. See [basic.py](openai/basic.py):
 
+```bash
+pip install -r examples/memory/openai/requirements.txt
+```
+
 ```python
 import pixeltable as pxt
 from pixelagent.openai import Agent
