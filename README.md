@@ -118,4 +118,4 @@ Each guide starts with a minimal core and shows how Pixeltable handles persisten
   - Tool integrations
   - State management
 
-Ready to start building? Dive into the blueprints, tweak them to your needs, and let Pixelagent handle the infrastructure while you focus on innovation!
+Ready to start building? Dive into the blueprints, tweak them to your needs, and let Pixeltable handle the AI data infrastructure while you focus on innovation!
