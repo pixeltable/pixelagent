@@ -4,6 +4,8 @@
 # This tutorial demonstrates the fundamental capabilities of the Pixelagent
 # framework, including agent creation, memory persistence, and tool integration.
 
+# pip install pixelagent openai
+
 import pixeltable as pxt
 from pixelagent.openai import Agent
 

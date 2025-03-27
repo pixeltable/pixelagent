@@ -13,8 +13,11 @@ Self-reflection is a pattern where one agent critiques another agent's output to
 
 Here's a simple example of the reflection pattern:
 
+```bash
+pip install pixelagent openai
+```
+
 ```python
-from pixelagent.patterns import reflection_loop
 from pixelagent.openai import Agent
 import pixeltable as pxt
 import yfinance as yf
@@ -50,6 +53,80 @@ reflection_agent = Agent(
 )
 
 # Run the reflection loop
+def reflection_loop(
+    main_agent: Agent,
+    reflection_agent: Agent,
+    user_msg: str,
+    max_iterations: int = 3,
+    verbose: int = 0,
+    is_tool_call: bool = False
+) -> str:
+    """
+    Run a complete reflection loop for a user message or tool call.
+    
+    The reflection loop follows these steps:
+    1. Generate initial response
+    2. Critique the response
+    3. Improve based on critique
+    4. Repeat until satisfied or max iterations reached
+    
+    Args:
+        main_agent (Agent): The main PixelAgent instance that generates responses
+        reflection_agent (Agent): The reflection PixelAgent instance that critiques
+        user_msg (str): The user message or query to process
+        max_iterations (int): Maximum number of reflection-improvement cycles
+        verbose (int): Verbosity level (0=quiet, 1=show all steps)
+        is_tool_call (bool): Whether to use tool_call instead of chat
+    
+    Returns:
+        str: The final refined response after reflection
+    """
+    # Step 1: Initial response generation
+    if is_tool_call:
+        response = main_agent.tool_call(user_msg)
+        original_result = response  # Save original tool call result for context
+    else:
+        response = main_agent.chat(user_msg)
+    
+    # Print initial response if verbose mode is enabled
+    if verbose > 0:
+        print(f"\n\nINITIAL {'TOOL CALL' if is_tool_call else 'GENERATION'}\n\n", response)
+    
+    # Step 2-4: Reflection and improvement iterations
+    for i in range(max_iterations):
+        if verbose > 0:
+            print(f"\n\nITERATION {i+1}/{max_iterations}\n\n")
+        
+        # Generate critique of the current response
+        critique = reflection_agent.chat(f"Please critique the following response:\n\n{response}")
+        
+        if verbose > 0:
+            print("\n\nREFLECTION\n\n", critique)
+        
+        # Check if the reflection agent is satisfied with the response
+        if "<OK>" in critique:
+            if verbose > 0:
+                print(f"\n\nResponse is satisfactory. Stopping reflection loop.\n\n")
+            break
+        
+        # Refine the response based on the critique
+        if is_tool_call:
+            # For tool calls, include the original result for context
+            prompt = f"The following was the result of a tool call: {original_result}\n\n" \
+                     f"Please improve this result based on this critique:\n\n{critique}"
+        else:
+            # For regular chat, just ask for improvements based on critique
+            prompt = f"Please improve your previous response based on this critique:\n\n{critique}"
+        
+        # Generate improved response
+        response = main_agent.chat(prompt)
+        
+        if verbose > 0:
+            print(f"\n\nREFINED {'TOOL CALL RESULT' if is_tool_call else 'RESPONSE'}\n\n", response)
+    
+    # Return the final refined response
+    return response
+
 analysis = reflection_loop(
     main_agent,
     reflection_agent,
@@ -57,6 +134,8 @@ analysis = reflection_loop(
     max_iterations=2,
     is_tool_call=True  # Automatically handles tool calling
 )
+
+print(analysis)
 ```
 
 ## How the Pattern Works
@@ -162,5 +241,3 @@ analysis = reflection_loop(
 1. Try modifying the example code with different tools
 2. Experiment with different reflection criteria
 3. Adjust max_iterations to find the right balance
-
-For more examples, check out other patterns in `pixelagent.patterns`.
