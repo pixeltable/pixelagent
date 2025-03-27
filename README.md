@@ -95,7 +95,7 @@ Each guide starts with a minimal core and shows how Pixeltable handles persisten
 
 ## Tutorials and Examples
 
-- **Basics**: Check out [Getting Started](examples/getting-started/pixelagent_basics_tutorial.py)for a step-by-step introduction to core concepts
+- **Basics**: Check out [Getting Started](examples/getting-started/pixelagent_basics_tutorial.py) for a step-by-step introduction to core concepts
 - **Advanced Patterns**: Explore [Reflection](examples/reflection/anthropic/reflection.py) and [Planning](examples/planning/anthropic/react.py) for more complex agent architectures
 - **Specialized Directories**: Browse our example directories for deeper implementations of specific techniques
 
