@@ -38,7 +38,7 @@ dependencies = [
 [project.urls]
 homepage = "https://pixeltable.com/"
 repository = "https://github.com/pixeltable/pixelagent"
-documentation = "https://github.com/pixeltable/pixelagent"
+documentation = "https://docs.pixeltable.com/docs/extensions/pixelagent"
 
 [tool.poetry]
 requires-poetry = ">=2.0"
