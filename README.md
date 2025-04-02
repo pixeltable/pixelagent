@@ -1,11 +1,6 @@
 # Pixelagent: An Agent Engineering Blueprint 
 
-- Agents: Intersection of LLM, storage, and orchestration
-- Pixeltable: Unifies these components into a single declarative framework
-- Pixelagent: A comprehensive guide for building an Agent framework on Pixeltable
-- Key benefits:
-  - De-facto choice for engineers building custom agentic applications
-  - Build-your-own functionality for memory, tool-calling, and advanced patterns
+We see agents as the intersection of an LLM, storage, and orchestration. Pixeltable unifies this interface into a single declarative framework, making it the de-facto choice for engineers to build custom agentic applications with build-your-own functionality for memory, tool-calling, and more.
 
 
 ## Build an Agent framework: 
