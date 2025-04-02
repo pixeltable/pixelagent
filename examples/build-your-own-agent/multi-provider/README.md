@@ -43,9 +43,11 @@ This design pattern applies the principle of "code reuse through inheritance" wh
 
 ## Step 1: Creating the Abstract Base Class
 
-The heart of our multi-provider architecture is the `BaseAgent` abstract base class:
+The heart of our multi-provider architecture is the `BaseAgent` abstract base classb:
 
 ```python
+# multi-provider/core/base.py
+
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Optional
@@ -110,10 +112,22 @@ The base class includes shared table setup and the primary user-facing methods (
 Each provider implements its own agent class that inherits from BaseAgent. Let's see how the Anthropic implementation works:
 
 ```python
+# multi-provider/anthropic.py
+
 from typing import Optional
+
 import pixeltable as pxt
+import pixeltable.functions as pxtf
+
 from pixelagent.core.base import BaseAgent
+
 from .utils import create_messages
+
+
+try:
+    from pixeltable.functions.anthropic import invoke_tools, messages
+except ImportError:
+    raise ImportError("anthropic not found; run `pip install anthropic`")
 
 class Agent(BaseAgent):
     """Anthropic-specific implementation of the BaseAgent."""
@@ -163,8 +177,8 @@ With our architecture in place, using either provider becomes remarkably simple:
 
 ```python
 # Import the specific provider you want to use
-from pixelagent.anthropic import Agent as AnthropicAgent
-from pixelagent.openai import Agent as OpenAIAgent
+from .anthropic import Agent as AnthropicAgent
+from .openai import Agent as OpenAIAgent
 
 # Create agents with the same interface
 claude_agent = AnthropicAgent(
@@ -211,18 +225,12 @@ Both providers support the same tool interface:
 ```python
 import pixeltable as pxt
 
+@pxt.udf
+def get_weather(location: str) -> str:
+    return f"The weather in {location} is sunny."
+
 # Define tools
-tools = pxt.tools(
-    [
-        {
-            "name": "weather",
-            "description": "Get current weather",
-            "parameters": {
-                "location": {"type": "string", "description": "City name"}
-            }
-        }
-    ]
-)
+tools = pxt.tools(get_weather)
 
 # Create agents with tools (works for both providers)
 agent = AnthropicAgent(
@@ -253,7 +261,7 @@ The multi-provider architecture provides an excellent foundation for implementin
 The ReAct pattern (Reason + Act) enables agents to tackle complex multi-step tasks by alternating between reasoning and action:
 
 ```python
-from pixelagent.anthropic import Agent
+from .anthropic import Agent
 import pixeltable as pxt
 
 # Define financial tools
@@ -292,7 +300,7 @@ agent = Agent(
 The reflection pattern uses one agent to critique another agent's output, enabling continuous improvement:
 
 ```python
-from pixelagent.openai import Agent
+from .openai import Agent
 
 # Main content generation agent
 main_agent = Agent(
@@ -333,8 +341,8 @@ def reflection_loop(user_query, iterations=2):
 One of the most powerful capabilities is creating agent chains that mix providers for different stages of processing:
 
 ```python
-from pixelagent.openai import Agent as OpenAIAgent
-from pixelagent.anthropic import Agent as AnthropicAgent
+from .openai import Agent as OpenAIAgent
+from .anthropic import Agent as AnthropicAgent
 
 # Use OpenAI for planning (strengths in structured reasoning)
 planner = OpenAIAgent(
