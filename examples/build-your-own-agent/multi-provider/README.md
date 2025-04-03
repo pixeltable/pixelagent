@@ -83,7 +83,7 @@ class BaseAgent(ABC):
 
         # Set up tables based on configuration
         if reset:
-            pxt.drop_dir(self.directory, force=True)
+            pxt.drop_dir(self.directory, if_not_exists = "ignore", force=True)
         pxt.create_dir(self.directory, if_exists="ignore")
         self._setup_tables()
         

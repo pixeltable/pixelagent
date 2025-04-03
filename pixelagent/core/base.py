@@ -57,7 +57,7 @@ class BaseAgent(ABC):
 
         # Set up or reset the agent's database
         if reset:
-            pxt.drop_dir(self.directory, force=True)
+            pxt.drop_dir(self.directory, if_not_exists = "ignore", force=True)
 
         # Create agent directory if it doesn't exist
         pxt.create_dir(self.directory, if_exists="ignore")
