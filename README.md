@@ -14,9 +14,9 @@ We see agents as the intersection of an LLM, storage, and orchestration. Pixelta
 
 ### Start with a simple Agent() class
 
-- **[Build with Anthropic](examples/build-your-own-agent/anthropic/README.md)**: Learn how we craft an agent using Claude, with cost-saving tricks like skipping chat history in tool calls.
+- **[Build with Anthropic](examples/build-your-own-agent/single-provider/anthropic/README.md)**: Learn how we craft an agent using Claude, with cost-saving tricks like skipping chat history in tool calls.
 
-- **[Build with OpenAI](examples/build-your-own-agent/openai/README.md)**: See how we use GPT models to create a lean, powerful agent with the same Pixeltable-driven efficiency.
+- **[Build with OpenAI](examples/build-your-own-agent/single-provider/openai/README.md)**: See how we use GPT models to create a lean, powerful agent with the same Pixeltable-driven efficiency.
 
 ### Extend Agent() to multiple providers
 
