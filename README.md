@@ -192,7 +192,7 @@ def run_react_loop(question, max_steps=5):
 recommendation = run_react_loop("Create an investment recommendation for AAPL")
 ```
 
-Check out our [tutorials](#tutorials-and-examples) for more examples including reflection loops, planning patterns, and multi-provider implementations.
+Check out our [tutorials](examples/) for more examples including reflection loops, planning patterns, and multi-provider implementations.
 
 ## Tutorials and Examples
 
