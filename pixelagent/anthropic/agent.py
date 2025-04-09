@@ -7,7 +7,6 @@ from pixelagent.core.base import BaseAgent
 
 from .utils import create_messages
 
-
 try:
     from pixeltable.functions.anthropic import invoke_tools, messages
 except ImportError:
@@ -17,16 +16,17 @@ except ImportError:
 class Agent(BaseAgent):
     """
     Anthropic-specific implementation of the BaseAgent.
-    
+
     This agent uses Anthropic's Claude API for generating responses and handling tools.
     It inherits common functionality from BaseAgent including:
     - Table setup and management
     - Memory persistence
     - Base chat and tool call implementations
-    
+
     The agent supports both limited and unlimited conversation history through
     the n_latest_messages parameter.
     """
+
     def __init__(
         self,
         agent_name: str,
@@ -54,16 +54,17 @@ class Agent(BaseAgent):
         """
         Configure the chat completion pipeline using Pixeltable's computed columns.
         This method implements the abstract method from BaseAgent.
-        
+
         The pipeline consists of 4 steps:
         1. Retrieve recent messages from memory
         2. Format messages for Claude
         3. Get completion from Anthropic
         4. Extract the response text
-        
+
         Note: The pipeline automatically handles memory limits based on n_latest_messages.
         When set to None, it maintains unlimited conversation history.
         """
+
         # Step 1: Define a query to get recent messages
         @pxt.query
         def get_recent_memory(current_timestamp: pxt.Timestamp) -> list[dict]:
@@ -84,14 +85,15 @@ class Agent(BaseAgent):
         # Step 2: Add computed columns to process the conversation
         # First, get the conversation history
         self.agent.add_computed_column(
-            memory_context=get_recent_memory(self.agent.timestamp), 
-            if_exists="ignore"
+            memory_context=get_recent_memory(self.agent.timestamp), if_exists="ignore"
         )
 
         # Format messages for Claude (simpler than OpenAI as system prompt is passed separately)
         self.agent.add_computed_column(
             messages=create_messages(
-                self.agent.memory_context, self.agent.user_message, self.agent.image,
+                self.agent.memory_context,
+                self.agent.user_message,
+                self.agent.image,
             ),
             if_exists="ignore",
         )
@@ -109,21 +111,20 @@ class Agent(BaseAgent):
 
         # Extract the final response text from Claude's specific response format
         self.agent.add_computed_column(
-            agent_response=self.agent.response.content[0].text, 
-            if_exists="ignore"
+            agent_response=self.agent.response.content[0].text, if_exists="ignore"
         )
 
     def _setup_tools_pipeline(self):
         """
         Configure the tool execution pipeline using Pixeltable's computed columns.
         This method implements the abstract method from BaseAgent.
-        
+
         The pipeline has 4 stages:
         1. Get initial response from Claude with potential tool calls
         2. Execute any requested tools
         3. Format tool results for follow-up
         4. Get final response incorporating tool outputs
-        
+
         Note: Claude's tool calling format differs slightly from OpenAI's,
         but the overall flow remains the same thanks to BaseAgent abstraction.
         """

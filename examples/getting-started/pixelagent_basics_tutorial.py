@@ -7,6 +7,7 @@
 # pip install pixelagent openai
 
 import pixeltable as pxt
+
 from pixelagent.openai import Agent
 
 # ============================================================================
@@ -18,7 +19,7 @@ from pixelagent.openai import Agent
 agent = Agent(
     agent_name="openai_agent",  # Unique identifier for this agent
     system_prompt="You're my assistant.",  # Defines agent personality and capabilities
-    reset=True  # Start with fresh conversation history
+    reset=True,  # Start with fresh conversation history
 )
 
 # ============================================================================
@@ -51,25 +52,27 @@ print(memory.collect())
 # ============================================================================
 # Extend agent capabilities with custom Python functions as tools
 
+
 # Define a simple weather tool as a user-defined function (UDF)
 @pxt.udf
 def weather(city: str) -> str:
     """
     Get the current weather for a specified city.
-    
+
     Args:
         city (str): The name of the city to check weather for
-        
+
     Returns:
         str: Weather description for the requested city
     """
     return f"The weather in {city} is sunny."
 
+
 # Add tool to our exisitng agent with custom system prompt instructions
 agent = Agent(
-    agent_name="openai_agent", 
-    system_prompt="Use your tools to answer the users questions.", 
-    tools=pxt.tools(weather)
+    agent_name="openai_agent",
+    system_prompt="Use your tools to answer the users questions.",
+    tools=pxt.tools(weather),
 )
 
 # ============================================================================

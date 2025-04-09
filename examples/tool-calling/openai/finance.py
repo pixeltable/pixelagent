@@ -1,9 +1,10 @@
-import pixeltable as pxt
 import random
+
+import pixeltable as pxt
+import yfinance as yf
 
 from pixelagent.openai import Agent
 
-import yfinance as yf
 
 # Define a simple tool with a description
 @pxt.udf
@@ -12,11 +13,13 @@ def stock_price(ticker: str) -> dict:
     stock = yf.Ticker(ticker)
     return stock.info
 
+
 # Define a new tool to get a random trading action
 @pxt.udf
 def analyst_recommendation(ticker: str) -> str:
     """Randomly select a trading action: buy, sell, or hold."""
     return random.choice(["buy", "sell", "hold"])
+
 
 # Create an agent with tools
 agent = Agent(

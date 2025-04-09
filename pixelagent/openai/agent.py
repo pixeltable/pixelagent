@@ -16,13 +16,14 @@ except ImportError:
 class Agent(BaseAgent):
     """
     OpenAI-specific implementation of the BaseAgent.
-    
+
     This agent uses OpenAI's chat completion API for generating responses and handling tools.
     It inherits common functionality from BaseAgent including:
     - Table setup and management
     - Memory persistence
     - Base chat and tool call implementations
     """
+
     def __init__(
         self,
         agent_name: str,
@@ -50,13 +51,14 @@ class Agent(BaseAgent):
         """
         Configure the chat completion pipeline using Pixeltable's computed columns.
         This method implements the abstract method from BaseAgent.
-        
+
         The pipeline consists of 4 steps:
         1. Retrieve recent messages from memory
         2. Format messages with system prompt
         3. Get completion from OpenAI
         4. Extract the response text
         """
+
         # Step 1: Define a query to get recent messages
         @pxt.query
         def get_recent_memory(current_timestamp: pxt.Timestamp) -> list[dict]:
@@ -79,7 +81,7 @@ class Agent(BaseAgent):
             memory_context=get_recent_memory(self.agent.timestamp),
             if_exists="ignore",
         )
-        
+
         # Format messages for OpenAI with system prompt
         self.agent.add_computed_column(
             prompt=create_messages(
@@ -90,7 +92,7 @@ class Agent(BaseAgent):
             ),
             if_exists="ignore",
         )
-        
+
         # Get OpenAI's API response
         self.agent.add_computed_column(
             response=chat_completions(
@@ -98,7 +100,7 @@ class Agent(BaseAgent):
             ),
             if_exists="ignore",
         )
-        
+
         # Extract the final response text
         self.agent.add_computed_column(
             agent_response=self.agent.response.choices[0].message.content,
@@ -109,7 +111,7 @@ class Agent(BaseAgent):
         """
         Configure the tool execution pipeline using Pixeltable's computed columns.
         This method implements the abstract method from BaseAgent.
-        
+
         The pipeline has 4 stages:
         1. Get initial response from OpenAI with potential tool calls
         2. Execute any requested tools
@@ -126,13 +128,13 @@ class Agent(BaseAgent):
             ),
             if_exists="ignore",
         )
-        
+
         # Stage 2: Execute any tools that OpenAI requested
         self.tools_table.add_computed_column(
             tool_output=invoke_tools(self.tools, self.tools_table.initial_response),
             if_exists="ignore",
         )
-        
+
         # Stage 3: Format tool results for follow-up
         self.tools_table.add_computed_column(
             tool_response_prompt=pxtf.string.format(
@@ -140,7 +142,7 @@ class Agent(BaseAgent):
             ),
             if_exists="ignore",
         )
-        
+
         # Stage 4: Get final response incorporating tool results
         self.tools_table.add_computed_column(
             final_response=chat_completions(
@@ -152,7 +154,7 @@ class Agent(BaseAgent):
             ),
             if_exists="ignore",
         )
-        
+
         # Extract the final response text
         self.tools_table.add_computed_column(
             tool_answer=self.tools_table.final_response.choices[0].message.content,
