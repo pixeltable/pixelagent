@@ -33,8 +33,7 @@ def semantic_search(query: str) -> list[dict]:
         .collect()
     )
     result_str = "\n".join(
-        f"Previous conversations: {content}"
-        for content in res["content"]
+        f"Previous conversations: {content}" for content in res["content"]
     )
     return result_str
 

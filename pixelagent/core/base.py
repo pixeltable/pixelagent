@@ -4,6 +4,7 @@ from typing import Optional
 from uuid import uuid4
 
 import pixeltable as pxt
+from PIL import Image
 
 
 class BaseAgent(ABC):
@@ -11,12 +12,12 @@ class BaseAgent(ABC):
     An Base agent powered by LLM model with persistent memory and tool execution capabilities.
 
     This base agent gets inherited by other agent classes (see pixelagent/anthropic/agent.py and pixelagent/anthropic/agent.py).
-    
+
     The agent maintains three key tables in Pixeltable:
     1. memory: Stores all conversation history with timestamps
     2. agent: Manages chat interactions and responses
     3. tools: (Optional) Handles tool execution and responses
-    
+
     Key Features:
     - Persistent conversation memory with optional message limit
     - Tool execution support
@@ -36,7 +37,7 @@ class BaseAgent(ABC):
     ):
         """
         Initialize the agent with the specified configuration.
-        
+
         Args:
             agent_name: Unique name for the agent (used for table names)
             system_prompt: System prompt that guides LLM's behavior
@@ -46,7 +47,7 @@ class BaseAgent(ABC):
             reset: If True, deletes existing agent data
             chat_kwargs: Additional kwargs for chat completion
             tool_kwargs: Additional kwargs for tool execution
-        """    
+        """
         self.directory = agent_name
         self.system_prompt = system_prompt
         self.model = model
@@ -57,7 +58,7 @@ class BaseAgent(ABC):
 
         # Set up or reset the agent's database
         if reset:
-            pxt.drop_dir(self.directory, if_not_exists = "ignore", force=True)
+            pxt.drop_dir(self.directory, if_not_exists="ignore", force=True)
 
         # Create agent directory if it doesn't exist
         pxt.create_dir(self.directory, if_exists="ignore")
@@ -84,10 +85,10 @@ class BaseAgent(ABC):
         self.memory = pxt.create_table(
             f"{self.directory}.memory",
             {
-                "message_id": pxt.String,   # Unique ID for each message
-                "role": pxt.String,         # 'user' or 'assistant'
-                "content": pxt.String,      # Message content
-                "timestamp": pxt.Timestamp, # When the message was received
+                "message_id": pxt.String,  # Unique ID for each message
+                "role": pxt.String,  # 'user' or 'assistant'
+                "content": pxt.String,  # Message content
+                "timestamp": pxt.Timestamp,  # When the message was received
             },
             if_exists="ignore",
         )
@@ -96,10 +97,11 @@ class BaseAgent(ABC):
         self.agent = pxt.create_table(
             f"{self.directory}.agent",
             {
-                "message_id": pxt.String,    # Unique ID for each message
+                "message_id": pxt.String,  # Unique ID for each message
                 "user_message": pxt.String,  # User's message content
                 "timestamp": pxt.Timestamp,  # When the message was received
-                "system_prompt": pxt.String, # System prompt for Claude
+                "system_prompt": pxt.String,  # System prompt for Claude
+                "image": pxt.Image,  # Optional image attachment
             },
             if_exists="ignore",
         )
@@ -110,8 +112,8 @@ class BaseAgent(ABC):
                 f"{self.directory}.tools",
                 {
                     "tool_invoke_id": pxt.String,  # Unique ID for each tool invocation
-                    "tool_prompt": pxt.String,     # Tool prompt for Claude
-                    "timestamp": pxt.Timestamp,    # When the tool was invoked
+                    "tool_prompt": pxt.String,  # Tool prompt for Claude
+                    "timestamp": pxt.Timestamp,  # When the tool was invoked
                 },
                 if_exists="ignore",
             )
@@ -131,19 +133,19 @@ class BaseAgent(ABC):
         """To be implemented by subclasses"""
         raise NotImplementedError
 
-    def chat(self, message: str) -> str:
+    def chat(self, message: str, image: Optional[Image.Image] = None) -> str:
         """
         Send a message to the agent and get its response.
-        
+
         This method:
         1. Stores the user message in memory
         2. Triggers the chat completion pipeline
         3. Stores the assistant's response in memory
         4. Returns the response
-        
+
         Args:
             message: The user's message
-            
+
         Returns:
             The agent's response
         """
@@ -173,6 +175,7 @@ class BaseAgent(ABC):
                     "user_message": message,
                     "timestamp": now,
                     "system_prompt": self.system_prompt,
+                    "image": image,
                 }
             ]
         )
@@ -201,16 +204,16 @@ class BaseAgent(ABC):
     def tool_call(self, prompt: str) -> str:
         """
         Execute a tool call with the given prompt.
-        
+
         This method:
         1. Stores the user prompt in memory
         2. Triggers the tool call handshake pipeline
         3. Stores the tool's response in memory
         4. Returns the response
-        
+
         Args:
             prompt: The user's prompt
-            
+
         Returns:
             The tool's response
         """

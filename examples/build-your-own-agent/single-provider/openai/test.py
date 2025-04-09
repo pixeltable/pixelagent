@@ -1,5 +1,6 @@
-from agent import Agent
 import pixeltable as pxt
+from agent import Agent
+
 
 @pxt.udf
 def weather(city: str) -> str:
@@ -8,12 +9,13 @@ def weather(city: str) -> str:
     """
     return f"The weather in {city} is sunny."
 
+
 # Create an agent
 agent = Agent(
-    agent_name="openai_agent", 
-    system_prompt="You’re my assistant.", 
-    tools=pxt.tools(weather), 
-    reset=True
+    agent_name="openai_agent",
+    system_prompt="You’re my assistant.",
+    tools=pxt.tools(weather),
+    reset=True,
 )
 
 # Persistant chat and memory

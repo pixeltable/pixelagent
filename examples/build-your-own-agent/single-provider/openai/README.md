@@ -25,7 +25,7 @@ The agent is built on three core components:
 Key classes and functions:
 
 - `Agent`: Main class that orchestrates all components
-- `create_messages()`: UDF that formats conversation history for the LLM
+- `create_messages()`: UDF that formats conversation history for the LLM, with support for images
 - Pixeltable tables:
   - `memory`: Stores all conversation history
   - `agent`: Manages chat interactions
@@ -34,10 +34,13 @@ Key classes and functions:
 The code shows the basic setup with imports and the Agent class initialization:
 
 ```python
+import base64
+import io
 from datetime import datetime
 from typing import Optional
 from uuid import uuid4
 
+import PIL
 import pixeltable as pxt
 import pixeltable.functions as pxtf
 
@@ -48,11 +51,34 @@ except ImportError:
 
 @pxt.udf
 def create_messages(
-    system_prompt: str, memory_context: list[dict], current_message: str
+    system_prompt: str, memory_context: list[dict], current_message: str,
+    image: Optional[PIL.Image.Image] = None
 ) -> list[dict]:
     messages = [{"role": "system", "content": system_prompt}]
     messages.extend(memory_context.copy())
-    messages.append({"role": "user", "content": current_message})
+    
+    # For text-only messages
+    if not image:
+        messages.append({"role": "user", "content": current_message})
+        return messages
+        
+    # For messages with images
+    # Encode Image
+    bytes_arr = io.BytesIO()
+    image.save(bytes_arr, format="jpeg")
+    b64_bytes = base64.b64encode(bytes_arr.getvalue())
+    b64_encoded_image = b64_bytes.decode("utf-8")
+    
+    # Create content blocks with text and image
+    content_blocks = [
+        {"type": "text", "text": current_message},
+        {
+            "type": "image_url",
+            "image_url": {"url": f"data:image/jpeg;base64,{b64_encoded_image}"},
+        },
+    ]
+    
+    messages.append({"role": "user", "content": content_blocks})
     return messages
 
 class Agent:
@@ -123,7 +149,8 @@ def _setup_tables(self):
             "message_id": pxt.String,    # Unique ID for each message
             "user_message": pxt.String,  # User's message content
             "timestamp": pxt.Timestamp,  # When the message was received
-            "system_prompt": pxt.String, # System prompt for Claude
+            "system_prompt": pxt.String, # System prompt for GPT
+            "image": PIL.Image.Image,    # Optional image for multimodal input
         },
         if_exists="ignore",
     )
@@ -278,8 +305,13 @@ agent = Agent(
 
 2. **Chat with the Agent**:
 ```python
-# Simple chat
+# Simple text chat
 response = agent.chat("Hello, how are you?")
+
+# Chat with an image
+from PIL import Image
+img = Image.open("path/to/image.jpg")
+response = agent.chat("What's in this image?", image=img)
 
 # Chat with tool execution
 response = agent.tool_call("What's the weather in New York?")
@@ -312,6 +344,7 @@ The implementation includes several key features:
    - Stores all conversation history in Pixeltable
    - Supports both limited and unlimited memory (n_latest_messages=None)
    - Unique message IDs for reliable tracking
+   - Support for multimodal conversations with image handling
 
 3. **Robust Tool Execution**
    - Clean handshake between LLM and tools
