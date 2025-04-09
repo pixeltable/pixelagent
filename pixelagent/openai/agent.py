@@ -86,6 +86,7 @@ class Agent(BaseAgent):
                 self.agent.system_prompt,
                 self.agent.memory_context,
                 self.agent.user_message,
+                self.agent.image,
             ),
             if_exists="ignore",
         )

@@ -101,7 +101,7 @@ class BaseAgent(ABC):
                 "user_message": pxt.String,  # User's message content
                 "timestamp": pxt.Timestamp,  # When the message was received
                 "system_prompt": pxt.String, # System prompt for Claude
-                "image": pxt.Image          # Optional image attachment
+                "image": pxt.Image           # Optional image attachment
             },
             if_exists="ignore",
         )
