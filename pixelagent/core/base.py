@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Optional
 from uuid import uuid4
+from PIL import Image
 
 import pixeltable as pxt
 
@@ -100,6 +101,7 @@ class BaseAgent(ABC):
                 "user_message": pxt.String,  # User's message content
                 "timestamp": pxt.Timestamp,  # When the message was received
                 "system_prompt": pxt.String, # System prompt for Claude
+                "image": pxt.Image          # Optional image attachment
             },
             if_exists="ignore",
         )
@@ -131,7 +133,7 @@ class BaseAgent(ABC):
         """To be implemented by subclasses"""
         raise NotImplementedError
 
-    def chat(self, message: str) -> str:
+    def chat(self, message: str, image: Optional[Image.Image] = None) -> str:
         """
         Send a message to the agent and get its response.
         
@@ -173,6 +175,7 @@ class BaseAgent(ABC):
                     "user_message": message,
                     "timestamp": now,
                     "system_prompt": self.system_prompt,
+                    "image": image,
                 }
             ]
         )

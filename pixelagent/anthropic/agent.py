@@ -91,7 +91,7 @@ class Agent(BaseAgent):
         # Format messages for Claude (simpler than OpenAI as system prompt is passed separately)
         self.agent.add_computed_column(
             messages=create_messages(
-                self.agent.memory_context, self.agent.user_message
+                self.agent.memory_context, self.agent.user_message, self.agent.image,
             ),
             if_exists="ignore",
         )
