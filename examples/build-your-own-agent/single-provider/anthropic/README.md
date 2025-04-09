@@ -25,7 +25,7 @@ The agent is built on three core components that inherit from the shared `BaseAg
 Key classes and functions:
 
 - `Agent`: Main class that inherits from `BaseAgent` and implements Anthropic-specific logic
-- `create_messages()`: UDF that formats conversation history for Claude
+- `create_messages()`: UDF that formats conversation history for Claude, with support for images
 - Pixeltable tables (inherited from `BaseAgent`):
   - `memory`: Stores all conversation history
   - `agent`: Manages chat interactions
@@ -34,10 +34,13 @@ Key classes and functions:
 Here's the basic setup with imports and the Agent class initialization:
 
 ```python
+import base64
+import io
 from datetime import datetime
 from typing import Optional
 from uuid import uuid4
 
+import PIL
 import pixeltable as pxt
 import pixeltable.functions as pxtf
 
@@ -47,10 +50,22 @@ except ImportError:
     raise ImportError("anthropic not found; run `pip install anthropic`")
 
 @pxt.udf
-def create_messages(memory_context: list[dict], current_message: str) -> list[dict]:
-    """Helper UDF to format conversation history and current message for Claude"""
+def create_messages(memory_context: list[dict], current_message: str, image: Optional[PIL.Image.Image] = None) -> list[dict]:
+    """Helper UDF to format conversation history and current message for Claude, with optional image support"""
     messages = memory_context.copy()
-    messages.append({"role": "user", "content": current_message})
+    
+    # For text-only messages
+    if not image:
+        messages.append({"role": "user", "content": current_message})
+        return messages
+        
+    # For messages with images
+    # Creates content blocks with text and image in base64 format
+    content_blocks = [
+        {"type": "text", "text": current_message},
+        {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg"}}
+    ]
+    messages.append({"role": "user", "content": content_blocks})
     return messages
 
 class Agent:
@@ -116,6 +131,7 @@ def _setup_tables(self):
             "user_message": pxt.String,  # User's message content
             "timestamp": pxt.Timestamp,  # When the message was received
             "system_prompt": pxt.String, # System prompt for Claude
+            "image": PIL.Image.Image,    # Optional image for multimodal input
         },
         if_exists="ignore",
     )
@@ -264,8 +280,13 @@ agent = Agent(
 
 2. **Chat with the Agent**:
 ```python
-# Simple chat
+# Simple text chat
 response = agent.chat("Hello, how are you?")
+
+# Chat with an image
+from PIL import Image
+img = Image.open("path/to/image.jpg")
+response = agent.chat("What's in this image?", image=img)
 
 # Chat with tool execution
 response = agent.tool_call("What's the weather in New York?")
@@ -287,6 +308,7 @@ print(memory.collect())
 2. **Flexible Memory Management**:
    - Optional message limit with `n_latest_messages`
    - Support for unlimited history when set to None
+   - Support for multimodal conversations with image handling
 
 3. **Automated Data Management**:
    - Persistent storage using Pixeltable

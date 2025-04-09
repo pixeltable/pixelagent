@@ -154,6 +154,7 @@ class Agent:
                 "user_message": pxt.String,  # User's message content
                 "timestamp": pxt.Timestamp,  # When the message was received
                 "system_prompt": pxt.String,  # System prompt for LLM
+                "image": pxt.Image,          # Optional image attachment
             },
             if_exists="ignore",
         )
@@ -205,7 +206,7 @@ class Agent:
         # Create messages for LLM
         self.agent.add_computed_column(
             messages=create_messages(
-                self.agent.memory_context, self.agent.user_message
+                self.agent.memory_context, self.agent.user_message, self.agent.image
             ),
             if_exists="ignore",
         )
@@ -279,7 +280,7 @@ class Agent:
             if_exists="ignore",
         )
 
-    def chat(self, message: str) -> str:
+    def chat(self, message: str, image: Optional[PIL.Image.Image] = None) -> str:
         """
         Send a message to the agent and get its response.
 
@@ -291,6 +292,7 @@ class Agent:
 
         Args:
             message: The user's message
+            image: Optional image attachment
 
         Returns:
             The agent's response
@@ -321,6 +323,7 @@ class Agent:
                     "user_message": message,
                     "timestamp": now,
                     "system_prompt": self.system_prompt,
+                    "image": image,
                 }
             ]
         )

@@ -6,10 +6,13 @@ and Pixeltable for persistent memory, storage, orchestration, and tool execution
 history and execute tools while keeping track of all interactions in a structured database.
 """
 
+import base64
+import io
 from datetime import datetime
 from typing import Optional
 from uuid import uuid4
 
+import PIL
 import pixeltable as pxt
 import pixeltable.functions as pxtf
 
@@ -21,11 +24,35 @@ except ImportError:
 
 @pxt.udf
 def create_messages(
-    system_prompt: str, memory_context: list[dict], current_message: str
+    system_prompt: str,
+    memory_context: list[dict],
+    current_message: str,
+    image: Optional[PIL.Image.Image] = None,
 ) -> list[dict]:
+
     messages = [{"role": "system", "content": system_prompt}]
     messages.extend(memory_context.copy())
-    messages.append({"role": "user", "content": current_message})
+
+    if not image:
+        messages.append({"role": "user", "content": current_message})
+        return messages
+
+    # Encode Image
+    bytes_arr = io.BytesIO()
+    image.save(bytes_arr, format="jpeg")
+    b64_bytes = base64.b64encode(bytes_arr.getvalue())
+    b64_encoded_image = b64_bytes.decode("utf-8")
+
+    # Create content blocks with text and image
+    content_blocks = [
+        {"type": "text", "text": current_message},
+        {
+            "type": "image_url",
+            "image_url": {"url": f"data:image/jpeg;base64,{b64_encoded_image}"},
+        },
+    ]
+
+    messages.append({"role": "user", "content": content_blocks})
     return messages
 
 
@@ -120,7 +147,8 @@ class Agent:
                 "message_id": pxt.String,  # Unique ID for each message
                 "user_message": pxt.String,  # User's message content
                 "timestamp": pxt.Timestamp,  # When the message was received
-                "system_prompt": pxt.String,  # System prompt for Claude
+                "system_prompt": pxt.String,  # System prompt for LLM
+                "image": pxt.Image,          # Optional image attachment
             },
             if_exists="ignore",
         )
@@ -237,7 +265,7 @@ class Agent:
             if_exists="ignore",
         )
 
-    def chat(self, message: str) -> str:
+    def chat(self, message: str, image: Optional[PIL.Image.Image] = None) -> str:
         """
         Send a message to the agent and get its response.
 
@@ -249,6 +277,7 @@ class Agent:
 
         Args:
             message: The user's message
+            image: Optional image attachment
 
         Returns:
             The agent's response
@@ -279,6 +308,7 @@ class Agent:
                     "user_message": message,
                     "timestamp": now,
                     "system_prompt": self.system_prompt,
+                    "image": image,
                 }
             ]
         )
