@@ -82,7 +82,7 @@ result = agent.tool_call("What's the current price of NVDA?")
 print(result)
 ```
 
-### Access Conversation Memory
+### State management
 
 ```python
 import pixeltable as pxt
@@ -94,11 +94,7 @@ conversations = memory.collect()
 # Access tool call history
 tools_log = pxt.get_table("financial_assistant.tools")
 tool_history = tools_log.collect()
-```
 
-### State management
-
-```python
 # Unlimited memory
 infinite_agent = Agent(
     agent_name="historian",
@@ -106,6 +102,7 @@ infinite_agent = Agent(
     n_latest_messages=None  # No limit on conversation history
 )
 ```
+
 ### Agentic Looping
 ```python
 
