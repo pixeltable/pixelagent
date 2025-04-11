@@ -96,7 +96,7 @@ tools_log = pxt.get_table("financial_assistant.tools")
 tool_history = tools_log.collect()
 ```
 
-### Advanced Features
+### State management
 
 ```python
 # Unlimited memory
@@ -105,6 +105,9 @@ infinite_agent = Agent(
     system_prompt="You remember everything.",
     n_latest_messages=None  # No limit on conversation history
 )
+```
+### Agentic Looping
+```python
 
 # ReAct pattern for step-by-step reasoning and planning
 import re
