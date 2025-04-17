@@ -1,4 +1,4 @@
-pixeltable
+pixelagent
 tiktoken
 openai
 openai-whisper

@@ -1,4 +1,5 @@
 import pixeltable as pxt
+from pixelagent.openai import Agent
 
 # Connect to your tables
 documents_t = pxt.get_table("pdf_search.documents")
@@ -13,7 +14,7 @@ document_urls = [
     DOCUMENT_URL + doc for doc in [
         "Argus-Market-Digest-June-2024.pdf",
         "Company-Research-Alphabet.pdf",
-        "Zacks-Nvidia-Repeport.pdf",
+        # "Zacks-Nvidia-Report.pdf",
     ]
 ]
 
@@ -22,7 +23,7 @@ documents_t.insert({"pdf": url} for url in document_urls)
 
 # Search documents
 @pxt.query
-def find_documents(query: str, top_k: int):
+def find_documents(query: str) -> dict:
     sim = documents_chunks.text.similarity(query)
     return (
         documents_chunks.order_by(sim, asc=False)
@@ -30,13 +31,14 @@ def find_documents(query: str, top_k: int):
             documents_chunks.text,
             similarity=sim
         )
-        .limit(top_k)
+        .limit(5)
     )
 
+tools = pxt.tools(find_documents)
 agent = Agent(
-    name = "pdf_search.agent", 
+    agent_name = "pdf_search.agent", 
     system_prompt = "Use your tool to search the PDF database.", 
-    tools = pxt.tools(find_documents)
+    tools = tools
 )
 
-agent.tool_call("What are the growth projections for tech companies?")
+print(agent.tool_call("Use your tool to search for Alphabet earnings."))

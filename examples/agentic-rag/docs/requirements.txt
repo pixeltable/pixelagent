@@ -1,3 +1,4 @@
-pixeltable
+pixelagent
+openai
 tiktoken
 sentence-transformers

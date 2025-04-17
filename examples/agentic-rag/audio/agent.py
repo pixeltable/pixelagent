@@ -11,21 +11,21 @@ audio_t.insert([{
 }])
 
 # Perform search
-@pxt.query()
-def audio_search(query_text: str, n: int = 5):
+@pxt.query
+def audio_search(query_text: str) -> str:
     min_similarity = 0.8
     sim = sentences_view.text.similarity(query_text)
     return (
         sentences_view.where(sim >= min_similarity)
         .order_by(sim, asc=False)
         .select(sentences_view.text, sim=sim)
-        .limit(n)
+        .limit(5)
     )
 
 agent = Agent(
-    name = "audio_search.agent", 
+    agent_name = "audio_search.agent", 
     system_prompt = "Use your tool to search the audio database.", 
     tools = pxt.tools(audio_search)
 )
 
-agent.tool_call("search for Pixeltable best practices")
+print(agent.tool_call("search for Pixeltable best practices"))

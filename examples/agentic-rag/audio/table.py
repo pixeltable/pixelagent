@@ -1,3 +1,6 @@
+
+# prerequisite: run `python -m spacy download en_core_web_sm` first
+
 import pixeltable as pxt
 from pixeltable.functions import whisper
 from pixeltable.functions.huggingface import sentence_transformer
@@ -8,7 +11,7 @@ import spacy
 nlp = spacy.load("en_core_web_sm")
 
 # Initialize app structure
-pxt.drop_dir("audio_search", force=True)
+pxt.drop_dir("audio_search", if_not_exists="ignore", force=True)
 pxt.create_dir("audio_search")
 
 # Create audio table

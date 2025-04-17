@@ -1,4 +1,5 @@
 import pixeltable as pxt
+from pixelagent.openai import Agent
 
 # Connect to your table
 img_t = pxt.get_table("image_search.images")
@@ -19,24 +20,21 @@ image_urls = [
 # Add images to the database
 img_t.insert({"image": url} for url in image_urls)
 
-# Search images
 @pxt.query
-def find_images(query: str, top_k: int):
+def find_images(query: str):
     sim = img_t.image_description.similarity(query)
     return (
         img_t.order_by(sim, asc=False)
-        .select(
-            img_t.image,
-            img_t.image_description,
-            similarity=sim
-        )
-        .limit(top_k)
+        .select(img_t.image_description)
+        .limit(5)
     )
 
+tools = pxt.tools(find_images)
 agent = Agent(
-    name = "image_search.agent", 
-    system_prompt = "Use your tool to search the image database.", 
-    tools = pxt.tools(find_images)
+    agent_name = "image_search.agent", 
+    system_prompt = "Use your tool to search the image index.", 
+    tools = tools,
+    reset=True
 )
 
-agent.tool_call("Provide the URL/Filepaths for images containing blue flowers")
+print(agent.tool_call("Describe the image that contains flowers"))

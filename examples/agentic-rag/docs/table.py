@@ -3,7 +3,7 @@ from pixeltable.iterators import DocumentSplitter
 from pixeltable.functions.huggingface import sentence_transformer
 
 # Initialize app structure
-pxt.drop_dir("pdf_search", force=True)
+pxt.drop_dir("pdf_search", if_not_exists="ignore", force=True)
 pxt.create_dir("pdf_search")
 
 # Create documents table
