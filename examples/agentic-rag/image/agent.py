@@ -21,7 +21,7 @@ image_urls = [
 img_t.insert({"image": url} for url in image_urls)
 
 @pxt.query
-def find_images(query: str):
+def find_images(query: str) -> dict:
     sim = img_t.image_description.similarity(query)
     return (
         img_t.order_by(sim, asc=False)
