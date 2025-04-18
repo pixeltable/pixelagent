@@ -1,3 +1,0 @@
-pixelagent
-openai
-sentence-transformers
