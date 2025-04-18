@@ -119,7 +119,7 @@ while step <= max_steps:
 
     # Initialize the ReAct agent with persistent memory (reset=False)
     agent = Agent(
-        agent_name="financial_analyst_react",
+        name="financial_analyst_react",
         system_prompt=react_system_prompt,  # Dynamic React System Prompt
         reset=False,  # Maintains persistent memory across steps
         # n_latest_messages=10,  # Optional: Define N rolling memory window
@@ -146,7 +146,7 @@ while step <= max_steps:
 
         # Create a tool-specific agent to handle the tool call
         tool_agent = Agent(
-            agent_name="financial_analyst_react",
+            name="financial_analyst_react",
             system_prompt="Use your tools to answer the user's question.",
             tools=pxt.tools(stock_info),  # Register the stock_info tool
         )
@@ -171,7 +171,7 @@ while step <= max_steps:
 print("Generating final investment recommendation...")
 
 summary_agent = Agent(
-    agent_name="financial_analyst_react",  # Same agent name to access history
+    name="financial_analyst_react",  # Same agent name to access history
     system_prompt="Answer the user's question. Use your previous chat history to answer the question.",
 )
 

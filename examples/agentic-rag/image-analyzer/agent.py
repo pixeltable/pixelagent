@@ -31,7 +31,7 @@ def find_images(query: str) -> dict:
 
 tools = pxt.tools(find_images)
 agent = Agent(
-    agent_name = "image_search.agent", 
+    name = "image_search.agent", 
     system_prompt = "Use your tool to search the image index.", 
     tools = tools,
     reset=True

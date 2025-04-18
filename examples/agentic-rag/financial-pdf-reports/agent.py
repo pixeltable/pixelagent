@@ -36,7 +36,7 @@ def find_documents(query: str) -> dict:
 
 tools = pxt.tools(find_documents)
 agent = Agent(
-    agent_name = "pdf_search.agent", 
+    name = "pdf_search.agent", 
     system_prompt = "Use your tool to search the PDF database.", 
     tools = tools
 )

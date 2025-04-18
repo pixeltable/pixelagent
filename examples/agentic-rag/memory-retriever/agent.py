@@ -9,7 +9,7 @@ embed_model = embeddings.using(model="text-embedding-3-small")
 
 # First Create the Agent
 agent = Agent(
-    agent_name="conversational_agent", 
+    name="conversational_agent", 
     system_prompt="You’re my assistant.", 
     reset=True,
     n_latest_messages=10
@@ -45,7 +45,7 @@ def search_memory(query: str) -> list[dict]:
     return res
 
 memory_agent = Agent(
-    agent_name="semantic_memory_agent",
+    name="semantic_memory_agent",
     system_prompt="Fetch context from previous conversations.",
     tools = pxt.tools(search_memory)
 )

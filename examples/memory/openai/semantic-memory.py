@@ -10,7 +10,7 @@ embed_model = sentence_transformer.using(model_id="intfloat/e5-large-v2")
 
 # First Create the Agent
 agent = Agent(
-    agent_name="semantic_bot", system_prompt="You’re my assistant.", reset=False
+    name="semantic_bot", system_prompt="You’re my assistant.", reset=False
 )
 
 # Get the Agents Memory table and add embedding index to the content

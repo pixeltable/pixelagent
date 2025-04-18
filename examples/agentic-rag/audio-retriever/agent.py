@@ -23,7 +23,7 @@ def audio_search(query_text: str) -> str:
     )
 
 agent = Agent(
-    agent_name = "audio_search.agent", 
+    name = "audio_search.agent", 
     system_prompt = "Use your tool to search the audio database.", 
     tools = pxt.tools(audio_search)
 )

@@ -1,7 +1,7 @@
 from pixelagent.openai import Agent
 
 vision_agent = Agent(
-    agent_name="openai_vision_agent",
+    name="openai_vision_agent",
     system_prompt="Answer questions about the image",
     model="gpt-4o-mini",
     reset=True,

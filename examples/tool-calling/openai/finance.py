@@ -23,7 +23,7 @@ def analyst_recommendation(ticker: str) -> str:
 
 # Create an agent with tools
 agent = Agent(
-    agent_name="financial_analyst",
+    name="financial_analyst",
     system_prompt="You are a CFA working at a top-tier investment bank.",
     tools=pxt.tools(stock_price, analyst_recommendation),
     reset=True,

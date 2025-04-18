@@ -131,7 +131,7 @@ tools = pxt.tools(stock_info)
 
 # Main agent that generates responses and uses tools
 main_agent = Agent(
-    agent_name="main_bot",
+    name="main_bot",
     system_prompt="You're a helpful financial assistant.",
     tools=tools,
     reset=True,  # Start with a fresh conversation history
@@ -139,7 +139,7 @@ main_agent = Agent(
 
 # Reflection agent that critiques responses
 reflection_agent = Agent(
-    agent_name="reflection_bot",
+    name="reflection_bot",
     system_prompt="""
     You are tasked with generating critique and recommendations for responses.
     If the response has something wrong or something to be improved, output a list of recommendations

@@ -26,7 +26,7 @@ class Agent(BaseAgent):
 
     def __init__(
         self,
-        agent_name: str,
+        name: str,
         system_prompt: str,
         model: str = "gpt-4o-mini",
         n_latest_messages: Optional[int] = 10,
@@ -37,7 +37,7 @@ class Agent(BaseAgent):
     ):
         # Initialize the base agent with all common parameters
         super().__init__(
-            agent_name=agent_name,
+            name=name,
             system_prompt=system_prompt,
             model=model,
             n_latest_messages=n_latest_messages,  # None for unlimited history

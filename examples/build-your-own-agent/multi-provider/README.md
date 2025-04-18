@@ -63,7 +63,7 @@ class BaseAgent(ABC):
 
     def __init__(
         self,
-        agent_name: str,
+        name: str,
         system_prompt: str,
         model: str,
         n_latest_messages: Optional[int] = 10,
@@ -73,7 +73,7 @@ class BaseAgent(ABC):
         tool_kwargs: Optional[dict] = None,
     ):
         # Store configuration
-        self.directory = agent_name
+        self.directory = name
         self.system_prompt = system_prompt
         self.model = model
         self.n_latest_messages = n_latest_messages
@@ -134,7 +134,7 @@ class Agent(BaseAgent):
     
     def __init__(
         self,
-        agent_name: str,
+        name: str,
         system_prompt: str,
         model: str = "claude-3-5-sonnet-latest",  # Default model for Anthropic
         n_latest_messages: Optional[int] = 10,
@@ -145,7 +145,7 @@ class Agent(BaseAgent):
     ):
         # Initialize the base agent with all common parameters
         super().__init__(
-            agent_name=agent_name,
+            name=name,
             system_prompt=system_prompt,
             model=model,
             n_latest_messages=n_latest_messages,
@@ -182,13 +182,13 @@ from .openai import Agent as OpenAIAgent
 
 # Create agents with the same interface
 claude_agent = AnthropicAgent(
-    agent_name="claude_assistant",
+    name="claude_assistant",
     system_prompt="You are a helpful assistant.",
     model="claude-3-5-sonnet-latest"
 )
 
 gpt_agent = OpenAIAgent(
-    agent_name="gpt_assistant",
+    name="gpt_assistant",
     system_prompt="You are a helpful assistant.",
     model="gpt-4-turbo"
 )
@@ -212,7 +212,7 @@ Both providers support infinite conversation history by setting `n_latest_messag
 ```python
 # Create an agent with unlimited memory
 agent = AnthropicAgent(
-    agent_name="memory_agent",
+    name="memory_agent",
     system_prompt="You are a helpful assistant.",
     n_latest_messages=None  # No limit on conversation history
 )
@@ -234,7 +234,7 @@ tools = pxt.tools(get_weather)
 
 # Create agents with tools (works for both providers)
 agent = AnthropicAgent(
-    agent_name="weather_assistant",
+    name="weather_assistant",
     system_prompt="Help users check weather.",
     tools=tools
 )
@@ -273,7 +273,7 @@ def stock_info(ticker: str) -> dict:
 
 # Create an agent with both system prompt and tools
 agent = Agent(
-    agent_name="financial_planner",
+    name="financial_planner",
     system_prompt="""
     You are a financial advisor that follows a step-by-step approach to analyze investments.
     
@@ -304,13 +304,13 @@ from .openai import Agent
 
 # Main content generation agent
 main_agent = Agent(
-    agent_name="content_creator",
+    name="content_creator",
     system_prompt="You are a technical writer creating clear documentation."
 )
 
 # Reflection agent for critique
 reflection_agent = Agent(
-    agent_name="critic",
+    name="critic",
     system_prompt="You review technical documentation for clarity, accuracy, and completeness."
 )
 
@@ -346,13 +346,13 @@ from .anthropic import Agent as AnthropicAgent
 
 # Use OpenAI for planning (strengths in structured reasoning)
 planner = OpenAIAgent(
-    agent_name="task_planner",
+    name="task_planner",
     system_prompt="Break down complex tasks into steps."
 )
 
 # Use Anthropic for content generation (strengths in detailed explanations)
 executor = AnthropicAgent(
-    agent_name="content_executor",
+    name="content_executor",
     system_prompt="Execute tasks according to plans."
 )
 

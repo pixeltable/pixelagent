@@ -25,7 +25,7 @@ def find_feedback(query: str) -> dict:
 
 tools = pxt.tools(find_feedback)
 agent = Agent(
-    agent_name = "feedback_agent", 
+    name = "feedback_agent", 
     system_prompt = "Use your tool to search the customer feedback reviews.", 
     tools = tools,
     reset=True

@@ -71,7 +71,7 @@ def create_messages(memory_context: list[dict], current_message: str, image: Opt
 class Agent:
     def __init__(
         self,
-        agent_name: str,
+        name: str,
         system_prompt: str,
         model: str = "claude-3-5-sonnet-latest",
         n_latest_messages: Optional[int] = 10,
@@ -80,7 +80,7 @@ class Agent:
         chat_kwargs: Optional[dict] = None,
         tool_kwargs: Optional[dict] = None,
     ):
-        self.directory = agent_name
+        self.directory = name
         self.system_prompt = system_prompt
         self.model = model
         self.n_latest_messages = n_latest_messages  # None for unlimited history
@@ -271,7 +271,7 @@ To use the agent in your code:
 1. **Initialize the Agent**:
 ```python
 agent = Agent(
-    agent_name="my_agent",
+    name="my_agent",
     system_prompt="You are a helpful assistant",
     model="claude-3-5-sonnet-latest",  # Latest Claude model
     n_latest_messages=10,  # None for unlimited history

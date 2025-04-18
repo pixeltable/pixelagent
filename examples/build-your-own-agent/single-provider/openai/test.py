@@ -12,7 +12,7 @@ def weather(city: str) -> str:
 
 # Create an agent
 agent = Agent(
-    agent_name="openai_agent",
+    name="openai_agent",
     system_prompt="You’re my assistant.",
     tools=pxt.tools(weather),
     reset=True,

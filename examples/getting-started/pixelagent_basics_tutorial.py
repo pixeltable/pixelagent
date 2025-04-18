@@ -17,7 +17,7 @@ from pixelagent.openai import Agent
 
 # Initialize the agent with a name and personality
 agent = Agent(
-    agent_name="openai_agent",  # Unique identifier for this agent
+    name="openai_agent",  # Unique identifier for this agent
     system_prompt="You're my assistant.",  # Defines agent personality and capabilities
     reset=True,  # Start with fresh conversation history
 )
@@ -40,7 +40,7 @@ print(agent.chat("What was my last question?"))
 # ============================================================================
 # How to retrieve and analyze the agent's conversation history
 
-# Access the agent's memory table using the agent_name
+# Access the agent's memory table using the name
 memory = pxt.get_table("openai_agent.memory")
 
 # Retrieve all conversation history
@@ -70,7 +70,7 @@ def weather(city: str) -> str:
 
 # Add tool to our exisitng agent with custom system prompt instructions
 agent = Agent(
-    agent_name="openai_agent",
+    name="openai_agent",
     system_prompt="Use your tools to answer the users questions.",
     tools=pxt.tools(weather),
 )

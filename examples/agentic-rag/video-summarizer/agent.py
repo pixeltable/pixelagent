@@ -31,7 +31,7 @@ def search_transcription(query: str) -> dict:
 
 tools = pxt.tools(search_transcription)
 agent = Agent(
-    agent_name = "video_agent", 
+    name = "video_agent", 
     system_prompt = "Use your tool to search the video transcription.", 
     tools = tools,
     reset=True

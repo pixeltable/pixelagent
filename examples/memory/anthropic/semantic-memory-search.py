@@ -7,7 +7,7 @@ embed_model = sentence_transformer.using(model_id="all-mpnet-base-v2")
 
 # First Create the Agent
 agent = Agent(
-    agent_name="semantic_bot", system_prompt="You’re my assistant.", reset=True
+    name="semantic_bot", system_prompt="You’re my assistant.", reset=True
 )
 
 # Add some memory

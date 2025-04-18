@@ -4,7 +4,7 @@ from pixelagent.openai import Agent
 
 # Create an agent
 agent = Agent(
-    agent_name="openai_agent", system_prompt="You’re my assistant.", reset=True
+    name="openai_agent", system_prompt="You’re my assistant.", reset=True
 )
 
 # Persistant chat and memory

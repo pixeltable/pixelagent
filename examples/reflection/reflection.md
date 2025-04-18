@@ -32,7 +32,7 @@ def stock_info(ticker: str) -> dict:
 # Create the main agent with the tool
 tools = pxt.tools(stock_info)
 main_agent = Agent(
-    agent_name="finance_bot",
+    name="finance_bot",
     system_prompt="You're a financial analyst. Provide clear insights about stocks.",
     tools=tools,  # Tools are automatically handled - no manual tool calling needed
     reset=True
@@ -40,7 +40,7 @@ main_agent = Agent(
 
 # Create the reflection agent
 reflection_agent = Agent(
-    agent_name="critic",
+    name="critic",
     system_prompt="""
     Review financial analyses for:
     1. Data accuracy and completeness
@@ -202,7 +202,7 @@ def market_news(ticker: str) -> list:
 tools = pxt.tools([stock_info, market_news])
 
 main_agent = Agent(
-    agent_name="finance_expert",
+    name="finance_expert",
     system_prompt="""
     You are a thorough financial analyst.
     - Use stock_info for fundamental data
@@ -214,7 +214,7 @@ main_agent = Agent(
 )
 
 reflection_agent = Agent(
-    agent_name="finance_critic",
+    name="finance_critic",
     system_prompt="""
     Evaluate financial analysis for:
     1. Data accuracy and completeness

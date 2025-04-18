@@ -13,7 +13,7 @@ def stock_price(ticker: str) -> dict:
 
 
 financial_analyst = Agent(
-    agent_name="financial_analyst",
+    name="financial_analyst",
     system_prompt="You are a CFA working at a top-tier investment bank.",
     tools=pxt.tools(stock_price),
     reset=True,
@@ -23,20 +23,20 @@ financial_analyst_udf = pxt.udf(
     financial_analyst, return_value=financial_analyst.answer
 )
 portfolio_manager = Agent(
-    agent_name="portfolio_manager",
+    name="portfolio_manager",
     system_prompt="You are a Portfolio Manager working at a top-tier investment bank.",
     tools=pxt.tools(financial_analyst_udf),
     reset=True,
 )
 
-# Test chat and tool_call functionality
-print("--------------")
-print(portfolio_manager.chat("Create the structure of a financial report for NVIDIA"))
-print("--------------")
-print(
-    portfolio_manager.tool_call(
-        "Ask you financial analyst for a comprehensive analysis on NVIDIA"
-    )
-)
-print("--------------")
-print(portfolio_manager.chat("Finalize your report based on the analysis"))
+# # Test chat and tool_call functionality
+# print("--------------")
+# print(portfolio_manager.chat("Create the structure of a financial report for NVIDIA"))
+# print("--------------")
+# print(
+#     portfolio_manager.tool_call(
+#         "Ask you financial analyst for a comprehensive analysis on NVIDIA"
+#     )
+# )
+# print("--------------")
+# print(portfolio_manager.chat("Finalize your report based on the analysis"))
