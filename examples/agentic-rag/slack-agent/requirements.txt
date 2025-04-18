@@ -1,0 +1,4 @@
+pixelagent
+openai
+slack_bolt
+python-dotenv
