@@ -84,7 +84,7 @@ def create_messages(
 class Agent:
     def __init__(
         self,
-        agent_name: str,
+        name: str,
         system_prompt: str,
         model: str = "gpt-4o-mini",
         n_latest_messages: Optional[int] = 10,
@@ -93,7 +93,7 @@ class Agent:
         chat_kwargs: Optional[dict] = None,
         tool_kwargs: Optional[dict] = None,
     ):
-        self.directory = agent_name
+        self.directory = name
         self.system_prompt = system_prompt
         self.model = model
         self.n_latest_messages = n_latest_messages
@@ -296,7 +296,7 @@ To use the agent in your code:
 1. **Initialize the Agent**:
 ```python
 agent = Agent(
-    agent_name="my_agent",
+    name="my_agent",
     system_prompt="You are a helpful assistant",
     model="gpt-4o-mini",  # or other OpenAI models
     n_latest_messages=10  # None for unlimited history

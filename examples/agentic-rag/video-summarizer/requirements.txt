@@ -1,0 +1,6 @@
+pixelagent
+openai
+tiktoken
+openai-whisper
+spacy
+sentence-transformers

@@ -73,7 +73,7 @@ class Agent:
 
     def __init__(
         self,
-        agent_name: str,
+        name: str,
         system_prompt: str,
         model: str = "gpt-4o-mini",
         n_latest_messages: Optional[int] = 10,
@@ -86,7 +86,7 @@ class Agent:
         Initialize the agent with the specified configuration.
 
         Args:
-            agent_name: Unique name for the agent (used for table names)
+            name: Unique name for the agent (used for table names)
             system_prompt: System prompt that guides LLM's behavior
             model: LLM model to use
             n_latest_messages: Number of recent messages to include in context (None for unlimited)
@@ -95,7 +95,7 @@ class Agent:
             chat_kwargs: Additional kwargs for chat completion
             tool_kwargs: Additional kwargs for tool execution
         """
-        self.directory = agent_name
+        self.directory = name
         self.system_prompt = system_prompt
         self.model = model
         self.n_latest_messages = n_latest_messages

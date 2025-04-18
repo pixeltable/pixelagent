@@ -25,7 +25,7 @@ import pixeltable as pxt
 from pixelagent.openai import Agent
 
 # Create an agent
-agent = Agent(agent_name="openai_agent", system_prompt="You're my assistant.", reset=True)
+agent = Agent(name="openai_agent", system_prompt="You're my assistant.", reset=True)
 
 # Chat with the agent
 agent.chat("Hi, how are you?")
@@ -55,7 +55,7 @@ from pixeltable.functions.huggingface import sentence_transformer
 embed_model = sentence_transformer.using(model_id="intfloat/e5-large-v2")
 
 # Create agent
-agent = Agent(agent_name="semantic_bot", system_prompt="You're my assistant.", reset=False)
+agent = Agent(name="semantic_bot", system_prompt="You're my assistant.", reset=False)
 
 # Get memory table and add embedding index
 memory = pxt.get_table("semantic_bot.memory")

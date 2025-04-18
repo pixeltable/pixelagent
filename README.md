@@ -3,7 +3,7 @@
 We see agents as the intersection of an LLM, storage, and orchestration. Pixeltable unifies this interface into a single declarative framework, making it the de-facto choice for engineers to build custom agentic applications with build-your-own functionality for memory, tool-calling, and more.
 
 
-## Build an Agent framework: 
+## Build a Stateful Agent framework: 
 
 - **Automated Data Orchestration**: Built on Pixeltable's infrastructure for seamless data management
 - **Native Multimodal**: Built-in support for text, images, and beyond
@@ -28,6 +28,7 @@ We see agents as the intersection of an LLM, storage, and orchestration. Pixelta
 - **[Memory](examples/memory)**: Implement long-term memory systems with semantic search capabilities
 - **[Reflection](examples/reflection)**: Add self-improvement loops
 - **[Reasoning](examples/planning)**: Add planning loops
+- **[Multimodal Agentic Rag](examples/agentic-rag)**: Multimodal agentic retrieval
 
 ## Usage
 
@@ -47,7 +48,7 @@ from pixelagent.anthropic import Agent  # Or from pixelagent.openai import Agent
 
 # Create a simple agent
 agent = Agent(
-    agent_name="my_assistant",
+    name="my_assistant",
     system_prompt="You are a helpful assistant."
 )
 
@@ -72,7 +73,7 @@ def stock_price(ticker: str) -> dict:
 
 # Create agent with tool
 agent = Agent(
-    agent_name="financial_assistant",
+    name="financial_assistant",
     system_prompt="You are a financial analyst assistant.",
     tools=pxt.tools(stock_price)
 )
@@ -97,7 +98,7 @@ tool_history = tools_log.collect()
 
 # Unlimited memory
 infinite_agent = Agent(
-    agent_name="historian",
+    name="historian",
     system_prompt="You remember everything.",
     n_latest_messages=None  # No limit on conversation history
 )
@@ -160,7 +161,7 @@ def run_react_loop(question, max_steps=5):
         
         # Agent with updated system prompt
         agent = Agent(
-            agent_name="financial_planner",
+            name="financial_planner",
             system_prompt=react_system_prompt,
             reset=False,  # Maintain memory between steps
         )
@@ -178,7 +179,7 @@ def run_react_loop(question, max_steps=5):
         # Call tool if needed
         if "stock_info" in action.lower():
             tool_agent = Agent(
-                agent_name="financial_planner",
+                name="financial_planner",
                 tools=pxt.tools(stock_info)
             )
             tool_agent.tool_call(question)
@@ -186,7 +187,7 @@ def run_react_loop(question, max_steps=5):
         step += 1
     
     # Generate final recommendation
-    return Agent(agent_name="financial_planner").chat(question)
+    return Agent(name="financial_planner").chat(question)
 
 # Run the planning loop
 recommendation = run_react_loop("Create an investment recommendation for AAPL")
