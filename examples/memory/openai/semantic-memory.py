@@ -47,10 +47,10 @@ def semantic_search(query: str) -> list[dict]:
 
 
 # Load some data into memory
-agent.chat("Hello my name is joe")
-agent.chat("I like football")
+agent.chat("What are your favorite travel destinations?")
+agent.chat("Can you recommend some activities in Paris?")
 
 # test the semantic search
-query = "I like denver broncos"
+query = "vacation ideas"
 context_from_previous_conversations = semantic_search(query)
 print(context_from_previous_conversations)
