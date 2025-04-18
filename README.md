@@ -3,7 +3,7 @@
 We see agents as the intersection of an LLM, storage, and orchestration. Pixeltable unifies this interface into a single declarative framework, making it the de-facto choice for engineers to build custom agentic applications with build-your-own functionality for memory, tool-calling, and more.
 
 
-## Build an Agent framework: 
+## Build a Stateful Agent framework: 
 
 - **Automated Data Orchestration**: Built on Pixeltable's infrastructure for seamless data management
 - **Native Multimodal**: Built-in support for text, images, and beyond
@@ -28,6 +28,7 @@ We see agents as the intersection of an LLM, storage, and orchestration. Pixelta
 - **[Memory](examples/memory)**: Implement long-term memory systems with semantic search capabilities
 - **[Reflection](examples/reflection)**: Add self-improvement loops
 - **[Reasoning](examples/planning)**: Add planning loops
+- **[Multimodal Agentic Rag](examples/agentic-rag)**: Multimodal agentic retrieval
 
 ## Usage
 
