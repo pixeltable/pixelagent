@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "pixelagent"
-version = "0.1.1"
+version = "0.1.2"
 description = "A modular AI agent framework supporting OpenAI and Anthropic models"
 license = "Apache-2.0"
 readme = "README.md"
