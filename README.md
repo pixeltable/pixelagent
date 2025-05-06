@@ -5,24 +5,24 @@
 We see agents as the intersection of an LLM, storage, and orchestration. Pixeltable unifies this interface into a single declarative framework, making it the de-facto choice for engineers to build custom agentic applications with build-your-own functionality for memory, tool-calling, and more.
 
 
-## Build a Stateful Agent framework: 
+## Build your own agent framework: 
 
-- **Automated Data Orchestration**: Built on Pixeltable's infrastructure for seamless data management
-- **Native Multimodal**: Built-in support for text, images, and beyond
-- **Declarative Model**: Define tables and columns; Pixeltable handles the rest
-- **LLM Protocol Support**: Handles OpenAI and Anthropic message protocols
-- **Tool Integration**: Built-in tool-call handshake system
+- **Data Orchestration and Storage**: Built on Pixeltable's data infrastructure
+- **Native Multimodal**: Built-in support for text, images, audio and video
+- **Declarative Model**: A type-safe python framework
+- **Model agnostic**: Extensible to multiple providers 
+- **Observability**: Complete traceability with automatic logging of messages, tool calls, and performance metrics
 - **Agentic Extensions**: Add reasoning, reflection, memory, knowledge, and team workflows.
 
-### Start with a simple Agent() class
+### Connect our blueprints to Cursor, Windsurf, Claude code:
 
-- **[Build with Anthropic](examples/build-your-own-agent/single-provider/anthropic/README.md)**: Learn how we craft an agent using Claude, with cost-saving tricks like skipping chat history in tool calls.
+- **[Anthropic Blueprint](examples/build-your-own-agent/single-provider/anthropic/README.md)**
 
-- **[Build with OpenAI](examples/build-your-own-agent/single-provider/openai/README.md)**: See how we use GPT models to create a lean, powerful agent with the same Pixeltable-driven efficiency.
+- **[OpenAI Blueprint](examples/build-your-own-agent/single-provider/openai/README.md)**
 
-### Extend Agent() to multiple providers
+### Extend your framework to multiple providers
 
-- **[Build with Multiple Providers](examples/build-your-own-agent/multi-provider/README.md)**: Learn how to extend the Agent class to support multiple LLM providers.
+- **[Multiple Providers](examples/build-your-own-agent/multi-provider/README.md)**: Learn how to extend your framework to support multiple LLM providers.
 
 ## Plug-and-Play Extensions 
 
@@ -92,7 +92,7 @@ print(result)
 ```python
 import pixeltable as pxt
 
-# Agent memory is automatically persisted
+# Agent memory is automatically persisted in tables
 memory = pxt.get_table("my_assistant.memory")
 conversations = memory.collect()
 
@@ -100,7 +100,7 @@ conversations = memory.collect()
 tools_log = pxt.get_table("financial_assistant.tools")
 tool_history = tools_log.collect()
 
-# Unlimited memory
+# adjustable memory
 infinite_agent = Agent(
     name="historian",
     system_prompt="You remember everything.",
@@ -108,7 +108,7 @@ infinite_agent = Agent(
 )
 ```
 
-### Agentic Looping
+### Custom Agentic Strategies
 ```python
 
 # ReAct pattern for step-by-step reasoning and planning
