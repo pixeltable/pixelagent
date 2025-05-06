@@ -1,17 +1,19 @@
 # Building Multi-Provider Agents with Pixeltable: A Step-by-Step Guide
 
-This tutorial takes your agent engineering skills to the next level by showing you how to build a unified agent framework that works seamlessly across different LLM providers (Anthropic and OpenAI). We'll extend the single-provider `Agent()` class into a flexible architecture with a shared base class and provider-specific implementations.
+This tutorial takes your agent engineering skills to the next level by showing you how to build a unified agent framework that works seamlessly across different LLM providers (Anthropic, OpenAI, and AWS Bedrock). We'll extend the single-provider `Agent()` class into a flexible architecture with a shared base class and provider-specific implementations.
 
 ## Prerequisites
 
 - Install required packages:
   ```bash
-  pip install pixeltable anthropic openai
+  pip install pixeltable anthropic openai boto3
   ```
 - Set up your API keys:
   ```bash
   export ANTHROPIC_API_KEY='your-anthropic-api-key'
   export OPENAI_API_KEY='your-openai-api-key'
+  # For AWS Bedrock, configure AWS credentials using AWS CLI or environment variables
+  aws configure  # Or set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_REGION
   ```
 
 ## Introduction: Why Multi-Provider?
@@ -171,7 +173,13 @@ The Anthropic agent then implements the required abstract methods with Claude-sp
 
 Similarly, the OpenAI implementation follows the same pattern but with OpenAI-specific message formatting and API calls.
 
-## Step 3: Using the Multi-Provider Architecture
+## Step 3: Testing
+
+Tests for each provider implementation can be found in the `pixelagent/tests` directory. These tests ensure that all providers conform to the expected behavior and interface defined by the BaseAgent class, and they serve as additional examples of how to use each provider.
+
+
+
+## Step 4: Using the Multi-Provider Architecture
 
 With our architecture in place, using either provider becomes remarkably simple:
 
@@ -179,6 +187,7 @@ With our architecture in place, using either provider becomes remarkably simple:
 # Import the specific provider you want to use
 from .anthropic import Agent as AnthropicAgent
 from .openai import Agent as OpenAIAgent
+from .bedrock import Agent as BedrockAgent
 
 # Create agents with the same interface
 claude_agent = AnthropicAgent(
@@ -193,9 +202,16 @@ gpt_agent = OpenAIAgent(
     model="gpt-4-turbo"
 )
 
+bedrock_agent = BedrockAgent(
+    name="bedrock_assistant",
+    system_prompt="You are a helpful assistant.",
+    model="amazon.nova-pro-v1:0"  # Or other Bedrock models
+)
+
 # Use them with the exact same interface
 claude_response = claude_agent.chat("Tell me about quantum computing")
 gpt_response = gpt_agent.chat("Tell me about quantum computing")
+bedrock_response = bedrock_agent.chat("Tell me about quantum computing")
 ```
 
 This unified interface makes it easy to:
@@ -207,7 +223,7 @@ This unified interface makes it easy to:
 
 ### 1. Infinite Memory Support
 
-Both providers support infinite conversation history by setting `n_latest_messages=None`:
+All providers support infinite conversation history by setting `n_latest_messages=None`:
 
 ```python
 # Create an agent with unlimited memory
@@ -220,7 +236,7 @@ agent = AnthropicAgent(
 
 ### 2. Tool Integration
 
-Both providers support the same tool interface:
+All providers support the same tool interface:
 
 ```python
 import pixeltable as pxt
@@ -232,9 +248,21 @@ def get_weather(location: str) -> str:
 # Define tools
 tools = pxt.tools(get_weather)
 
-# Create agents with tools (works for both providers)
-agent = AnthropicAgent(
-    name="weather_assistant",
+# Create agents with tools (works for all providers)
+anthropic_agent = AnthropicAgent(
+    name="anthropic_weather_assistant",
+    system_prompt="Help users check weather.",
+    tools=tools
+)
+
+openai_agent = OpenAIAgent(
+    name="openai_weather_assistant",
+    system_prompt="Help users check weather.",
+    tools=tools
+)
+
+bedrock_agent = BedrockAgent(
+    name="bedrock_weather_assistant",
     system_prompt="Help users check weather.",
     tools=tools
 )
@@ -293,7 +321,7 @@ agent = Agent(
 
 1. **Automatic Memory Management**: All conversation history and tool outputs are automatically stored in Pixeltable, making it easy to reference previous steps
 2. **Dynamic System Prompts**: Variables like `{current_step}` can be updated dynamically without rebuilding the agent
-3. **Provider Flexibility**: The same ReAct pattern works seamlessly across both Anthropic and OpenAI models
+3. **Provider Flexibility**: The same ReAct pattern works seamlessly across Anthropic, OpenAI, and AWS Bedrock models
 
 ### Self-Reflection Pattern
 
@@ -333,7 +361,7 @@ def reflection_loop(user_query, iterations=2):
 **Why it's easy with our multi-provider architecture:**
 
 1. **Persistent Memory**: Both agents automatically maintain their conversation history, making it easy to analyze previous responses
-2. **Uniform Interface**: The same code works with any combination of providers (OpenAI main + Anthropic reflection, etc.)
+2. **Uniform Interface**: The same code works with any combination of providers (OpenAI main + Anthropic reflection + Bedrock for specialized tasks, etc.)
 3. **Simplified Agent Creation**: Creating specialized agents with different system prompts requires minimal code
 
 ### Cross-Provider Chains
@@ -343,6 +371,7 @@ One of the most powerful capabilities is creating agent chains that mix provider
 ```python
 from .openai import Agent as OpenAIAgent
 from .anthropic import Agent as AnthropicAgent
+from .bedrock import Agent as BedrockAgent
 
 # Use OpenAI for planning (strengths in structured reasoning)
 planner = OpenAIAgent(
@@ -356,6 +385,13 @@ executor = AnthropicAgent(
     system_prompt="Execute tasks according to plans."
 )
 
+# Use Bedrock for specialized tasks (e.g., code generation)
+code_generator = BedrockAgent(
+    name="code_generator",
+    system_prompt="Generate code based on specifications.",
+    model="amazon.nova-pro-v1:0"
+)
+
 # Multi-provider workflow
 def execute_task(user_query):
     # Get plan from OpenAI agent
@@ -363,6 +399,11 @@ def execute_task(user_query):
     
     # Execute plan with Anthropic agent
     result = executor.chat(f"Execute this plan:\n{plan}")
+    
+    # Generate code if needed
+    if "code" in user_query.lower():
+        code = code_generator.chat(f"Generate code for: {result}")
+        result += f"\n\nHere's the implementation:\n\n{code}"
     
     return result
 ```
