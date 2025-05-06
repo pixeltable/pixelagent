@@ -34,6 +34,8 @@ We see agents as the intersection of an LLM, storage, and orchestration. Pixelta
 
 ## Usage
 
+Transform your agent blueprint into a distributable package on PyPI, extending the build-your-own philosophy to deployment and sharing.
+
 ### Installation
 
 ```bash
