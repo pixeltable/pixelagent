@@ -173,7 +173,13 @@ The Anthropic agent then implements the required abstract methods with Claude-sp
 
 Similarly, the OpenAI implementation follows the same pattern but with OpenAI-specific message formatting and API calls.
 
-## Step 3: Using the Multi-Provider Architecture
+## Step 3: Testing
+
+Tests for each provider implementation can be found in the `pixelagent/tests` directory. These tests ensure that all providers conform to the expected behavior and interface defined by the BaseAgent class, and they serve as additional examples of how to use each provider.
+
+
+
+## Step 4: Using the Multi-Provider Architecture
 
 With our architecture in place, using either provider becomes remarkably simple:
 
