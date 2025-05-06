@@ -1,3 +1,5 @@
+![Pixelagent](https://github.com/user-attachments/assets/70cbead1-d82a-401f-bd0f-69a5ddd6d77e)
+
 # Pixelagent: An Agent Engineering Blueprint 
 
 We see agents as the intersection of an LLM, storage, and orchestration. Pixeltable unifies this interface into a single declarative framework, making it the de-facto choice for engineers to build custom agentic applications with build-your-own functionality for memory, tool-calling, and more.
