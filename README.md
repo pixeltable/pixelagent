@@ -14,7 +14,7 @@ We see agents as the intersection of an LLM, storage, and orchestration. Pixelta
 - **Observability**: Complete traceability with automatic logging of messages, tool calls, and performance metrics
 - **Agentic Extensions**: Add reasoning, reflection, memory, knowledge, and team workflows.
 
-### Connect our blueprints to Cursor, Windsurf, Claude code:
+## Connect our blueprints to Cursor, Windsurf, Claude code:
 
 - **[Anthropic Blueprint](examples/build-your-own-agent/single-provider/anthropic/README.md)**
 - **[OpenAI Blueprint](examples/build-your-own-agent/single-provider/openai/README.md)**
