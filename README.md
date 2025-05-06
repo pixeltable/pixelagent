@@ -19,10 +19,7 @@ We see agents as the intersection of an LLM, storage, and orchestration. Pixelta
 - **[Anthropic Blueprint](examples/build-your-own-agent/single-provider/anthropic/README.md)**
 - **[OpenAI Blueprint](examples/build-your-own-agent/single-provider/openai/README.md)**
 - **[AWS Bedrock Blueprint](examples/build-your-own-agent/single-provider/bedrock/README.md)** 
-
-### Extend your framework to multiple providers
-
-- **[Multiple Providers](examples/build-your-own-agent/multi-provider/README.md)**: Learn how to extend your framework to support multiple LLM providers.
+- **[Combined Providers](examples/build-your-own-agent/multi-provider/README.md)**
 
 ## Plug-and-Play Extensions 
 
