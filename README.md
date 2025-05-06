@@ -17,8 +17,8 @@ We see agents as the intersection of an LLM, storage, and orchestration. Pixelta
 ### Connect our blueprints to Cursor, Windsurf, Claude code:
 
 - **[Anthropic Blueprint](examples/build-your-own-agent/single-provider/anthropic/README.md)**
-
 - **[OpenAI Blueprint](examples/build-your-own-agent/single-provider/openai/README.md)**
+- **[AWS Bedrock Blueprint](examples/build-your-own-agent/single-provider/bedrock/README.md)** 
 
 ### Extend your framework to multiple providers
 
