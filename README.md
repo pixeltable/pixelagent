@@ -16,10 +16,10 @@ We see agents as the intersection of an LLM, storage, and orchestration. [Pixelt
 
 ## Connect our blueprints to Cursor, Windsurf, Claude code:
 
-- **[Anthropic Blueprint](examples/build-your-own-agent/single-provider/anthropic/README.md)**
-- **[OpenAI Blueprint](examples/build-your-own-agent/single-provider/openai/README.md)**
-- **[AWS Bedrock Blueprint](examples/build-your-own-agent/single-provider/bedrock/README.md)** 
-- **[Multiprovider Blueprint](examples/build-your-own-agent/multi-provider/README.md)**
+- **[Anthropic Blueprint](https://github.com/pixeltable/pixelagent/blob/main/blueprints/single-provider/anthropic/README.md)**
+- **[OpenAI Blueprint](https://github.com/pixeltable/pixelagent/blob/main/blueprints/single-provider/openai/README.md)**
+- **[AWS Bedrock Blueprint](https://github.com/pixeltable/pixelagent/blob/main/blueprints/single-provider/bedrock/README.md)** 
+- **[Multiprovider Blueprint](https://github.com/pixeltable/pixelagent/tree/main/blueprints/multi-provider/README.md)**
 
 ## Plug-and-Play Extensions 
 
