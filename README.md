@@ -14,7 +14,7 @@ We see agents as the intersection of an LLM, storage, and orchestration. [Pixelt
 - **Observability**: Complete traceability with automatic logging of messages, tool calls, and performance metrics
 - **Agentic Extensions**: Add reasoning, reflection, memory, knowledge, and team workflows.
 
-## Connect our blueprints to Cursor, Windsurf, Claude code:
+## Connect blueprints to Cursor, Windsurf, Cline:
 
 - **[Anthropic](https://github.com/pixeltable/pixelagent/blob/main/blueprints/single-provider/anthropic/README.md)**
 - **[OpenAI](https://github.com/pixeltable/pixelagent/blob/main/blueprints/single-provider/openai/README.md)**
