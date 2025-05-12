@@ -97,11 +97,11 @@ conversations = memory.collect()
 tools_log = pxt.get_table("financial_assistant.tools")
 tool_history = tools_log.collect()
 
-# adjustable memory
-infinite_agent = Agent(
-    name="historian",
-    system_prompt="You remember everything.",
-    n_latest_messages=None  # No limit on conversation history
+# cusomatizable memory database
+conversational_agent = Agent(
+    name="conversation_agent",
+    system_prompt="Focus on remebering the conversation",
+    n_latest_messages=14
 )
 ```
 
