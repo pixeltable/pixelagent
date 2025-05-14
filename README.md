@@ -1,5 +1,22 @@
 [![Pixelagent Video Demo](https://img.youtube.com/vi/_8L3aBdxPJU/maxresdefault.jpg)](https://www.youtube.com/watch?v=_8L3aBdxPJU)
 
+<div align="center">
+    
+[![License](https://img.shields.io/badge/License-Apache%202.0-0530AD.svg)](https://opensource.org/licenses/Apache-2.0)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pixeltable?logo=python&logoColor=white&)
+![Platform Support](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-E5DDD4)
+<br>
+[![PyPI Package](https://img.shields.io/pypi/v/pixeltable?color=4D148C)](https://pypi.org/project/pixeltable/)
+[![My Discord (1306431018890166272)](https://img.shields.io/badge/💬-Discord-%235865F2.svg)](https://discord.gg/QPyqFYx2UN)
+
+[**Documentation**](https://docs.pixeltable.com/) |
+[**API Reference**](https://pixeltable.github.io/pixeltable/) |
+[**Examples**](https://docs.pixeltable.com/docs/examples/use-cases) |
+[**Discord Community**](https://discord.gg/QPyqFYx2UN)
+
+</div>
+
+---
 # Pixelagent: An Agent Engineering Blueprint 
 
 We see agents as the intersection of an LLM, storage, and orchestration. [Pixeltable](https://github.com/pixeltable/pixeltable) unifies this interface into a single declarative framework, making it the de-facto choice for engineers to build custom agentic applications with build-your-own functionality for memory, tool-calling, and more.
