@@ -1,4 +1,4 @@
-![Pixelagent](https://github.com/user-attachments/assets/70cbead1-d82a-401f-bd0f-69a5ddd6d77e)
+[![Pixelagent Video Demo](https://img.youtube.com/vi/_8L3aBdxPJU/maxresdefault.jpg)](https://www.youtube.com/watch?v=_8L3aBdxPJU)
 
 # Pixelagent: An Agent Engineering Blueprint 
 
