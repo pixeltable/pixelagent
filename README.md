@@ -2,7 +2,13 @@
 
 # Pixelagent: An Agent Engineering Blueprint 
 
-[![Pixelagent Video Demo](https://img.youtube.com/vi/_8L3aBdxPJU/maxresdefault.jpg)](https://www.youtube.com/watch?v=_8L3aBdxPJU)
+<div align="center">
+  <h3>▶️ Pixelagent Video Demo - Click to Watch</h3>
+  <a href="https://www.youtube.com/watch?v=_8L3aBdxPJU">
+    <img src="https://img.youtube.com/vi/_8L3aBdxPJU/maxresdefault.jpg" alt="Pixelagent Video Demo" style="max-width: 100%;">
+  </a>
+  <p><i>👆 Click the image above to watch the video on YouTube 👆</i></p>
+</div>
 
 We see agents as the intersection of an LLM, storage, and orchestration. [Pixeltable](https://github.com/pixeltable/pixeltable) unifies this interface into a single declarative framework, making it the de-facto choice for engineers to build custom agentic applications with build-your-own functionality for memory, tool-calling, and more.
 
