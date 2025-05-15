@@ -7,7 +7,7 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pixeltable?logo=python&logoColor=white&)
 ![Platform Support](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-E5DDD4)
 <br>
-[![PyPI Package](https://img.shields.io/pypi/v/pixeltable?color=4D148C)](https://pypi.org/project/pixeltable/)
+[![PyPI Package](https://img.shields.io/pypi/v/pixelagent?color=4D148C)](https://pypi.org/project/pixelagent/)
 [![My Discord (1306431018890166272)](https://img.shields.io/badge/💬-Discord-%235865F2.svg)](https://discord.gg/QPyqFYx2UN)
 
 [**Documentation**](https://docs.pixeltable.com/) |
