@@ -1,6 +1,7 @@
-[![Pixelagent Video Demo](https://img.youtube.com/vi/_8L3aBdxPJU/maxresdefault.jpg)](https://www.youtube.com/watch?v=BS6PRsnxkBA)
+![Pixelagent](https://github.com/user-attachments/assets/640a77dc-8e34-41f1-a698-a24c8c6aa021)
 
 <div align="center">
+
     
 [![License](https://img.shields.io/badge/License-Apache%202.0-0530AD.svg)](https://opensource.org/licenses/Apache-2.0)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pixeltable?logo=python&logoColor=white&)
