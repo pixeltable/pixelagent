@@ -1,20 +1,36 @@
 ![Pixelagent](https://github.com/user-attachments/assets/640a77dc-8e34-41f1-a698-a24c8c6aa021)
 
 <div align="center">
+  <img src="https://github.com/user-attachments/assets/640a77dc-8e34-41f1-a698-a24c8c6aa021" alt="Pixelagent" width="800"/>
+  <h1>Build Your Own Agent Framework</h1>
 
-    
-[![License](https://img.shields.io/badge/License-Apache%202.0-0530AD.svg)](https://opensource.org/licenses/Apache-2.0)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pixeltable?logo=python&logoColor=white&)
-![Platform Support](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-E5DDD4)
-<br>
-[![PyPI Package](https://img.shields.io/pypi/v/pixelagent?color=4D148C)](https://pypi.org/project/pixelagent/)
-[![My Discord (1306431018890166272)](https://img.shields.io/badge/💬-Discord-%235865F2.svg)](https://discord.gg/QPyqFYx2UN)
-
-[**Documentation**](https://docs.pixeltable.com/) |
-[**API Reference**](https://pixeltable.github.io/pixeltable/) |
-[**Examples**](https://docs.pixeltable.com/docs/examples/use-cases) |
-[**Discord Community**](https://discord.gg/QPyqFYx2UN)
-
+  <!-- Badges - First Row -->
+  <p>
+    <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-0530AD.svg" alt="License"></a>
+    <img src="https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue?logo=python&logoColor=white" alt="Python Versions">
+    <img src="https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-E5DDD4" alt="Platform Support">
+  </p>
+  
+  <!-- Badges - Second Row -->
+  <p>
+    <a href="https://pypi.org/project/pixelagent/"><img src="https://img.shields.io/pypi/v/pixelagent?color=4D148C" alt="PyPI Package"></a>
+    <a href="https://discord.gg/QPyqFYx2UN"><img src="https://img.shields.io/badge/💬-Discord-%235865F2.svg" alt="Discord"></a>
+    <a href="https://www.youtube.com/watch?v=BS6PRsnxkBA"><img src="https://img.shields.io/badge/Watch-Demo-FF0000?logo=youtube&logoColor=white" alt="Watch Demo"></a>
+  </p>
+  
+  <!-- Documentation Links -->
+  <p>
+    <b><a href="https://docs.pixeltable.com/">Documentation</a></b> |
+    <b><a href="https://pixeltable.github.io/pixeltable/">API Reference</a></b> |
+    <b><a href="https://docs.pixeltable.com/docs/examples/use-cases">Examples</a></b> |
+    <b><a href="https://discord.gg/QPyqFYx2UN">Discord Community</a></b>
+  </p>
+  
+  <!-- Demo Video -->
+  <a href="https://www.youtube.com/watch?v=BS6PRsnxkBA">
+    <img src="https://img.youtube.com/vi/BS6PRsnxkBA/maxresdefault.jpg" alt="Demo Video" width="800"/>
+    <p>👆 Click to watch the demo video</p>
+  </a>
 </div>
 
 ---
