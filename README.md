@@ -4,7 +4,7 @@
   <!-- Badges - First Row -->
   <p>
     <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-0530AD.svg" alt="License"></a>
-    <img src="https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue?logo=python&logoColor=white" alt="Python Versions">
+    <img src="https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue?logo=python&logoColor=white" alt="Python Versions">
     <img src="https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-E5DDD4" alt="Platform Support">
   </p>
   
@@ -12,7 +12,6 @@
   <p>
     <a href="https://pypi.org/project/pixelagent/"><img src="https://img.shields.io/pypi/v/pixelagent?color=4D148C" alt="PyPI Package"></a>
     <a href="https://discord.gg/QPyqFYx2UN"><img src="https://img.shields.io/badge/💬-Discord-%235865F2.svg" alt="Discord"></a>
-    <a href="https://www.youtube.com/watch?v=BS6PRsnxkBA"><img src="https://img.shields.io/badge/Watch-Demo-FF0000?logo=youtube&logoColor=white" alt="Watch Demo"></a>
   </p>
   
   <!-- Documentation Links -->
@@ -20,7 +19,6 @@
     <b><a href="https://docs.pixeltable.com/">Documentation</a></b> |
     <b><a href="https://pixeltable.github.io/pixeltable/">API Reference</a></b> |
     <b><a href="https://docs.pixeltable.com/docs/examples/use-cases">Examples</a></b> |
-    <b><a href="https://discord.gg/QPyqFYx2UN">Discord Community</a></b>
   </p>
   
   <!-- Demo Video -->
