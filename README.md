@@ -1,4 +1,4 @@
-[![Pixelagent Video Demo](https://img.youtube.com/vi/_8L3aBdxPJU/maxresdefault.jpg)](https://www.youtube.com/watch?v=_8L3aBdxPJU)
+[![Pixelagent Video Demo](https://img.youtube.com/vi/_8L3aBdxPJU/maxresdefault.jpg)](https://www.youtube.com/watch?v=BS6PRsnxkBA)
 
 <div align="center">
     
