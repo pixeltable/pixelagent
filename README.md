@@ -1,5 +1,3 @@
-![Pixelagent](https://github.com/user-attachments/assets/640a77dc-8e34-41f1-a698-a24c8c6aa021)
-
 <div align="center">
   <img src="https://github.com/user-attachments/assets/640a77dc-8e34-41f1-a698-a24c8c6aa021" alt="Pixelagent" width="800"/>
   <h1>Build Your Own Agent Framework</h1>
