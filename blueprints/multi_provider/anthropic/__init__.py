@@ -1,3 +1,10 @@
-from .agent import Agent
+"""
+Anthropic agent module for multi-provider blueprints.
 
-__all__ = ["Agent"]
+This module provides an Agent class for interacting with Anthropic's Claude models.
+"""
+
+from .agent import Agent
+from .utils import create_messages
+
+__all__ = ["Agent", "create_messages"]

@@ -4,6 +4,7 @@ from typing import Optional
 from uuid import uuid4
 
 import pixeltable as pxt
+from PIL import Image
 
 
 class BaseAgent(ABC):
@@ -100,6 +101,7 @@ class BaseAgent(ABC):
                 "user_message": pxt.String,  # User's message content
                 "timestamp": pxt.Timestamp,  # When the message was received
                 "system_prompt": pxt.String,  # System prompt for Claude
+                "image": pxt.Image,  # Optional image attachment
             },
             if_exists="ignore",
         )
@@ -131,7 +133,7 @@ class BaseAgent(ABC):
         """To be implemented by subclasses"""
         raise NotImplementedError
 
-    def chat(self, message: str) -> str:
+    def chat(self, message: str, image: Optional[Image.Image] = None) -> str:
         """
         Send a message to the agent and get its response.
 
@@ -173,6 +175,7 @@ class BaseAgent(ABC):
                     "user_message": message,
                     "timestamp": now,
                     "system_prompt": self.system_prompt,
+                    "image": image,
                 }
             ]
         )
@@ -217,7 +220,8 @@ class BaseAgent(ABC):
         if not self.tools:
             return "No tools configured for this agent."
 
-        now = datetime.now()
+        # Use separate timestamps for user and assistant messages
+        user_timestamp = datetime.now()
         user_message_id = str(uuid4())
         tool_invoke_id = str(uuid4())
         assistant_message_id = str(uuid4())
@@ -229,7 +233,7 @@ class BaseAgent(ABC):
                     "message_id": user_message_id,
                     "role": "user",
                     "content": prompt,
-                    "timestamp": now,
+                    "timestamp": user_timestamp,
                 }
             ]
         )
@@ -240,7 +244,7 @@ class BaseAgent(ABC):
                 {
                     "tool_invoke_id": tool_invoke_id,
                     "tool_prompt": prompt,
-                    "timestamp": now,
+                    "timestamp": user_timestamp,
                 }
             ]
         )
@@ -253,14 +257,15 @@ class BaseAgent(ABC):
         )
         tool_answer = result["tool_answer"][0]
 
-        # Store LLM's response in memory
+        # Store LLM's response in memory with a slightly later timestamp
+        assistant_timestamp = datetime.now()
         self.memory.insert(
             [
                 {
                     "message_id": assistant_message_id,
                     "role": "assistant",
                     "content": tool_answer,
-                    "timestamp": now,
+                    "timestamp": assistant_timestamp,
                 }
             ]
         )

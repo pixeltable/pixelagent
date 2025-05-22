@@ -1,3 +1,4 @@
 pixeltable
 openai
 anthropic
+boto3
