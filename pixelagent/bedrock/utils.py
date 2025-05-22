@@ -13,22 +13,46 @@ def create_messages(
     image: Optional[PIL.Image.Image] = None,
 ) -> list[dict]:
     """
-    Format messages for Bedrock models (similar to Anthropic's format).
+    Create a formatted message list for Bedrock Claude models.
+    
+    This function formats the conversation history and current message
+    into the structure expected by Bedrock Claude models.
     
     Args:
-        memory_context: Previous conversation history
-        current_message: Current user message
+        memory_context: List of previous messages from memory
+        current_message: The current user message
         image: Optional image to include with the message
         
     Returns:
-        List of message dictionaries formatted for Bedrock
+        List of formatted messages for Bedrock Claude
     """
-    # Create a copy to avoid modifying the original
-    messages = memory_context.copy()
+    # Create a copy to avoid modifying the original and format for Bedrock
+    messages = []
+    
+    # Get messages in oldest-first order
+    reversed_memory = list(reversed(memory_context))
+    
+    # Ensure the conversation starts with a user message
+    # If the first message is from the assistant, skip it
+    start_idx = 0
+    if reversed_memory and reversed_memory[0]["role"] == "assistant":
+        start_idx = 1
+    
+    # Format previous messages for Bedrock
+    for msg in reversed_memory[start_idx:]:
+        # Convert string content to the required list format
+        if isinstance(msg["content"], str):
+            messages.append({
+                "role": msg["role"],
+                "content": [{"text": msg["content"]}]
+            })
+        else:
+            # If it's already in the correct format, keep it as is
+            messages.append(msg)
 
     # For text-only messages
     if not image:
-        messages.append({"role": "user", "content": current_message})
+        messages.append({"role": "user", "content": [{"text": current_message}]})
         return messages
 
     # Convert image to base64

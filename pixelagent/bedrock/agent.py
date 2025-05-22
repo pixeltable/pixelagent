@@ -8,7 +8,7 @@ from pixelagent.core.base import BaseAgent
 from .utils import create_messages
 
 try:
-    from pixeltable.functions import bedrock
+    from pixeltable.functions.bedrock import converse, invoke_tools
 except ImportError:
     raise ImportError("boto3 not found; run `pip install boto3`")
 
@@ -24,7 +24,8 @@ class Agent(BaseAgent):
     - Base chat and tool call implementations
 
     The agent supports both limited and unlimited conversation history through
-    the n_latest_messages parameter.
+    the n_latest_messages parameter for regular chat, while tool calls use only
+    the current message without conversation history.
     """
 
     def __init__(
@@ -57,8 +58,8 @@ class Agent(BaseAgent):
 
         The pipeline consists of 4 steps:
         1. Retrieve recent messages from memory
-        2. Format messages for Claude
-        3. Get completion from Anthropic
+        2. Format messages for Bedrock Claude
+        3. Get completion from Bedrock
         4. Extract the response text
 
         Note: The pipeline automatically handles memory limits based on n_latest_messages.
@@ -88,7 +89,7 @@ class Agent(BaseAgent):
             memory_context=get_recent_memory(self.agent.timestamp), if_exists="ignore"
         )
 
-        # Format messages for Claude (simpler than OpenAI as system prompt is passed separately)
+        # Format messages for Bedrock Claude
         self.agent.add_computed_column(
             messages=create_messages(
                 self.agent.memory_context,
@@ -98,9 +99,9 @@ class Agent(BaseAgent):
             if_exists="ignore",
         )
 
-        # Get Bedrock API response
+        # Get Bedrock Claude's API response
         self.agent.add_computed_column(
-            response=bedrock.converse(
+            response=converse(
                 messages=self.agent.messages,
                 model_id=self.model,
                 system=[{"text": self.system_prompt}],
@@ -109,9 +110,10 @@ class Agent(BaseAgent):
             if_exists="ignore",
         )
 
-        # Extract the final response text from Bedrock's specific response format
+        # Extract the final response text from Bedrock Claude's specific response format
         self.agent.add_computed_column(
-            agent_response=self.agent.response.output.message.content[0].text, if_exists="ignore"
+            agent_response=self.agent.response.output.message.content[0].text, 
+            if_exists="ignore"
         )
 
     def _setup_tools_pipeline(self):
@@ -120,29 +122,30 @@ class Agent(BaseAgent):
         This method implements the abstract method from BaseAgent.
 
         The pipeline has 4 stages:
-        1. Get initial response from Claude with potential tool calls
+        1. Get initial response from Bedrock Claude with potential tool calls
         2. Execute any requested tools
         3. Format tool results for follow-up
         4. Get final response incorporating tool outputs
 
-        Note: Claude's tool calling format differs slightly from OpenAI's,
-        but the overall flow remains the same thanks to BaseAgent abstraction.
+        Note: For tool calls, we only use the current message without conversation history
+        to ensure tool execution is based solely on the current request.
         """
         # Stage 1: Get initial response with potential tool calls
+        # Note: We only use the current tool prompt without memory context
         self.tools_table.add_computed_column(
-            initial_response=bedrock.converse(
+            initial_response=converse(
                 model_id=self.model,
-                system=[{"text": self.system_prompt}],  # Include system prompt in JSON format
-                messages=[{"role": "user", "content": self.tools_table.tool_prompt}],
-                tool_config=self.tools,  # Pass available tools to Bedrock
+                system=[{"text": self.system_prompt}],
+                messages=[{"role": "user", "content": [{"text": self.tools_table.tool_prompt}]}],
+                tool_config=self.tools,  # Pass available tools to Bedrock Claude
                 **self.tool_kwargs,
             ),
             if_exists="ignore",
         )
 
-        # Stage 2: Execute any tools that Bedrock requested
+        # Stage 2: Execute any tools that Bedrock Claude requested
         self.tools_table.add_computed_column(
-            tool_output=bedrock.invoke_tools(self.tools, self.tools_table.initial_response),
+            tool_output=invoke_tools(self.tools, self.tools_table.initial_response),
             if_exists="ignore",
         )
 
@@ -155,19 +158,20 @@ class Agent(BaseAgent):
         )
 
         # Stage 4: Get final response incorporating tool results
+        # Again, we only use the current tool response without memory context
         self.tools_table.add_computed_column(
-            final_response=bedrock.converse(
+            final_response=converse(
                 model_id=self.model,
                 system=[{"text": self.system_prompt}],
                 messages=[
-                    {"role": "user", "content": self.tools_table.tool_response_prompt}
+                    {"role": "user", "content": [{"text": self.tools_table.tool_response_prompt}]}
                 ],
                 **self.tool_kwargs,
             ),
             if_exists="ignore",
         )
 
-        # Extract the final response text from Bedrock's format
+        # Extract the final response text from Bedrock Claude's format
         self.tools_table.add_computed_column(
             tool_answer=self.tools_table.final_response.output.message.content[0].text,
             if_exists="ignore",
