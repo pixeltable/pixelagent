@@ -1,17 +1,13 @@
-"""
-Test script for the AWS Bedrock Agent Blueprint.
+import sys
+from pathlib import Path
 
-This script demonstrates how to create and use a Bedrock-powered agent
-with both basic chat functionality and tool execution.
+root_dir = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(root_dir))
 
-Prerequisites:
-- AWS credentials configured (via AWS CLI, environment variables, or IAM role)
-- Access to AWS Bedrock models
-"""
+from blueprints.multi_provider.bedrock.agent import Agent as BedrockAgent
+
 
 import pixeltable as pxt
-from agent import Agent
-
 
 @pxt.udf
 def stock_price(ticker: str) -> float:
@@ -29,11 +25,11 @@ def stock_price(ticker: str) -> float:
 
 def main():
     # Create a Bedrock agent with memory
-    agent = Agent(
+    agent = BedrockAgent(
         name="bedrock_test",
         system_prompt="You are a helpful assistant that can answer questions and use tools.",
         model="amazon.nova-pro-v1:0",  # Use the Amazon Nova Pro model
-        n_latest_messages=None,  # Unlimited memory to ensure all messages are included
+        n_latest_messages=10,  # Keep last 10 messages in context
         tools=pxt.tools(stock_price),  # Register the stock_price tool
         reset=True,  # Reset the agent's memory for testing
     )
@@ -41,7 +37,7 @@ def main():
     print("\n=== Testing Conversational Memory ===\n")
     
     # First conversation turn
-    user_message = "Hello, my name is Alice."
+    user_message = "Hello, my name is Charlie."
     print(f"User: {user_message}")
     response = agent.chat(user_message)
     print(f"Agent: {response}\n")
@@ -52,15 +48,15 @@ def main():
     response = agent.chat(user_message)
     print(f"Agent: {response}\n")
     
-    print("\n=== Testing Tool Calling (No Memory) ===\n")
+    print("\n=== Testing Tool Calling ===\n")
     
-    # Tool call - should not use memory from previous conversation
+    # Tool call
     user_message = "What is the stock price of NVDA today?"
     print(f"User: {user_message}")
     response = agent.tool_call(user_message)
     print(f"Agent: {response}\n")
     
-    # Another tool call - should not remember previous tool call
+    # Another tool call
     user_message = "What about AAPL?"
     print(f"User: {user_message}")
     response = agent.tool_call(user_message)
@@ -73,19 +69,6 @@ def main():
     print(f"User: {user_message}")
     response = agent.chat(user_message)
     print(f"Agent: {response}\n")
-    
-    # Check if the memory contains all the messages
-    print("\n=== Checking Memory Contents ===\n")
-    memory_contents = agent.memory.select(
-        agent.memory.role, 
-        agent.memory.content
-    ).order_by(agent.memory.timestamp, asc=True).collect()
-    
-    print("Memory contains the following messages:")
-    for i in range(len(memory_contents)):
-        role = memory_contents["role"][i]
-        content = memory_contents["content"][i]
-        print(f"{i+1}. {role}: {content[:50]}...")
 
 
 if __name__ == "__main__":

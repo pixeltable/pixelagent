@@ -6,8 +6,7 @@ and Pixeltable for persistent memory, storage, orchestration, and tool execution
 history and execute tools while keeping track of all interactions in a structured database.
 """
 
-import base64
-import io
+from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Optional
 from uuid import uuid4
@@ -15,6 +14,9 @@ from uuid import uuid4
 import PIL
 import pixeltable as pxt
 import pixeltable.functions as pxtf
+from PIL import Image
+
+from utils import create_messages
 
 try:
     from pixeltable.functions.bedrock import converse, invoke_tools
@@ -22,58 +24,11 @@ except ImportError:
     raise ImportError("boto3 not found; run `pip install boto3`")
 
 
-@pxt.udf
-def create_messages(
-    memory_context: list[dict],
-    current_message: str,
-    image: Optional[PIL.Image.Image] = None,
-) -> list[dict]:
+class BaseAgent(ABC):
     """
-    Format messages for Bedrock models.
-    
-    Args:
-        memory_context: Previous conversation history
-        current_message: Current user message
-        image: Optional image to include with the message
-        
-    Returns:
-        List of message dictionaries formatted for Bedrock
-    """
-    # Create a copy to avoid modifying the original
-    messages = memory_context.copy()
+    An Base agent powered by LLM model with persistent memory and tool execution capabilities.
 
-    # For text-only messages
-    if not image:
-        messages.append({"role": "user", "content": current_message})
-        return messages
-
-    # Convert image to base64
-    bytes_arr = io.BytesIO()
-    image.save(bytes_arr, format="JPEG")
-    b64_bytes = base64.b64encode(bytes_arr.getvalue())
-    b64_encoded_image = b64_bytes.decode("utf-8")
-
-    # Create content blocks with text and image
-    content_blocks = [
-        {"type": "text", "text": current_message},
-        {
-            "type": "image",
-            "source": {
-                "type": "base64",
-                "media_type": "image/jpeg",
-                "data": b64_encoded_image,
-            },
-        },
-    ]
-
-    messages.append({"role": "user", "content": content_blocks})
-
-    return messages
-
-
-class Agent:
-    """
-    An AI agent powered by AWS Bedrock LLM models with persistent memory and tool execution capabilities.
+    This base agent gets inherited by the Bedrock Agent class.
 
     The agent maintains three key tables in Pixeltable:
     1. memory: Stores all conversation history with timestamps
@@ -90,7 +45,7 @@ class Agent:
         self,
         name: str,
         system_prompt: str,
-        model: str = "amazon.nova-pro-v1:0",
+        model: str,
         n_latest_messages: Optional[int] = 10,
         tools: Optional[pxt.tools] = None,
         reset: bool = False,
@@ -103,7 +58,7 @@ class Agent:
         Args:
             name: Unique name for the agent (used for table names)
             system_prompt: System prompt that guides LLM's behavior
-            model: Bedrock model ID to use (defaults to amazon.nova-pro-v1:0)
+            model: LLM model to use
             n_latest_messages: Number of recent messages to include in context (None for unlimited)
             tools: Optional tools configuration for function calling
             reset: If True, deletes existing agent data
@@ -162,8 +117,8 @@ class Agent:
                 "message_id": pxt.String,  # Unique ID for each message
                 "user_message": pxt.String,  # User's message content
                 "timestamp": pxt.Timestamp,  # When the message was received
-                "system_prompt": pxt.String,  # System prompt for LLM
-                "image": pxt.Image,          # Optional image attachment
+                "system_prompt": pxt.String,  # System prompt for Claude
+                "image": pxt.Image,  # Optional image attachment
             },
             if_exists="ignore",
         )
@@ -174,122 +129,28 @@ class Agent:
                 f"{self.directory}.tools",
                 {
                     "tool_invoke_id": pxt.String,  # Unique ID for each tool invocation
-                    "tool_prompt": pxt.String,  # Tool prompt for LLM
+                    "tool_prompt": pxt.String,  # Tool prompt for Claude
                     "timestamp": pxt.Timestamp,  # When the tool was invoked
                 },
                 if_exists="ignore",
             )
+            # Set up tools pipeline
             self._setup_tools_pipeline()
 
         # Set up chat pipeline
         self._setup_chat_pipeline()
 
+    @abstractmethod
     def _setup_chat_pipeline(self):
-        """
-        Configure the chat completion pipeline using Pixeltable computed columns.
-        This sets up a series of sequential computations that:
-        1. Retrieve recent conversation history
-        2. Format messages for Bedrock
-        3. Get Bedrock's response
-        4. Extract the response text
-        """
+        """To be implemented by subclasses"""
+        raise NotImplementedError
 
-        # Get recent messages from memory
-        @pxt.query
-        def get_recent_memory(current_timestamp: pxt.Timestamp) -> list[dict]:
-            """Get recent messages from memory, respecting n_latest_messages limit if set"""
-            query = (
-                self.memory.where(self.memory.timestamp < current_timestamp)
-                .order_by(self.memory.timestamp, asc=False)
-                .select(role=self.memory.role, content=self.memory.content)
-            )
-            if self.n_latest_messages is not None:
-                query = query.limit(self.n_latest_messages)
-            return query
-
-        # Add computed columns to process chat completion
-        self.agent.add_computed_column(
-            memory_context=get_recent_memory(self.agent.timestamp), if_exists="ignore"
-        )
-
-        # Create messages for Bedrock
-        self.agent.add_computed_column(
-            messages=create_messages(
-                self.agent.memory_context, self.agent.user_message, self.agent.image
-            ),
-            if_exists="ignore",
-        )
-
-        # Get Bedrock API response
-        self.agent.add_computed_column(
-            api_response=converse(
-                messages=self.agent.messages,
-                model_id=self.model,
-                system=[{"text": self.system_prompt}],
-                **self.chat_kwargs,
-            ),
-            if_exists="ignore",
-        )
-
-        # Parse LLM's response
-        self.agent.add_computed_column(
-            agent_response=self.agent.api_response.output.message.content[0].text, if_exists="ignore"
-        )
-
+    @abstractmethod
     def _setup_tools_pipeline(self):
-        """
-        Configure the tool call handshake pipeline using Pixeltable computed columns.
-        This sets up a series of transformations that:
-        1. Get initial response from LLM with tool calls
-        2. Execute the tools
-        3. Get final response from LLM with tool results
-        """
-        # Get initial response from LLM with tool calls
-        self.tools_table.add_computed_column(
-            initial_response=converse(
-                model_id=self.model,
-                system=[{"text": self.system_prompt}],
-                messages=[{"role": "user", "content": self.tools_table.tool_prompt}],
-                tool_config=self.tools,
-                **self.tool_kwargs,
-            ),
-            if_exists="ignore",
-        )
+        """To be implemented by subclasses"""
+        raise NotImplementedError
 
-        # Execute the tools
-        self.tools_table.add_computed_column(
-            tool_output=invoke_tools(self.tools, self.tools_table.initial_response),
-            if_exists="ignore",
-        )
-
-        # Pass the tool results back to LLM for final response
-        self.tools_table.add_computed_column(
-            tool_response_prompt=pxtf.string.format(
-                "{0}: {1}", self.tools_table.tool_prompt, self.tools_table.tool_output
-            ),
-            if_exists="ignore",
-        )
-
-        # Get final api response from Bedrock with tool results
-        self.tools_table.add_computed_column(
-            final_response=converse(
-                model_id=self.model,
-                system=[{"text": self.system_prompt}],
-                messages=[
-                    {"role": "user", "content": self.tools_table.tool_response_prompt}
-                ],
-                **self.tool_kwargs,
-            ),
-            if_exists="ignore",
-        )
-
-        # Parse LLM's response
-        self.tools_table.add_computed_column(
-            tool_answer=self.tools_table.final_response.output.message.content[0].text,
-            if_exists="ignore",
-        )
-
-    def chat(self, message: str, image: Optional[PIL.Image.Image] = None) -> str:
+    def chat(self, message: str, image: Optional[Image.Image] = None) -> str:
         """
         Send a message to the agent and get its response.
 
@@ -377,7 +238,8 @@ class Agent:
         if not self.tools:
             return "No tools configured for this agent."
 
-        now = datetime.now()
+        # Use separate timestamps for user and assistant messages
+        user_timestamp = datetime.now()
         user_message_id = str(uuid4())
         tool_invoke_id = str(uuid4())
         assistant_message_id = str(uuid4())
@@ -389,7 +251,7 @@ class Agent:
                     "message_id": user_message_id,
                     "role": "user",
                     "content": prompt,
-                    "timestamp": now,
+                    "timestamp": user_timestamp,
                 }
             ]
         )
@@ -400,7 +262,7 @@ class Agent:
                 {
                     "tool_invoke_id": tool_invoke_id,
                     "tool_prompt": prompt,
-                    "timestamp": now,
+                    "timestamp": user_timestamp,
                 }
             ]
         )
@@ -413,15 +275,181 @@ class Agent:
         )
         tool_answer = result["tool_answer"][0]
 
-        # Store LLM's response in memory
+        # Store LLM's response in memory with a slightly later timestamp
+        assistant_timestamp = datetime.now()
         self.memory.insert(
             [
                 {
                     "message_id": assistant_message_id,
                     "role": "assistant",
                     "content": tool_answer,
-                    "timestamp": now,
+                    "timestamp": assistant_timestamp,
                 }
             ]
         )
         return tool_answer
+
+
+class Agent(BaseAgent):
+    """
+    AWS Bedrock-specific implementation of the BaseAgent.
+
+    This agent uses AWS Bedrock's Claude API for generating responses and handling tools.
+    It inherits common functionality from BaseAgent including:
+    - Table setup and management
+    - Memory persistence
+    - Base chat and tool call implementations
+
+    The agent supports both limited and unlimited conversation history through
+    the n_latest_messages parameter for regular chat, while tool calls use only
+    the current message without conversation history.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        system_prompt: str,
+        model: str = "amazon.nova-pro-v1:0",
+        n_latest_messages: Optional[int] = 10,
+        tools: Optional[pxt.tools] = None,
+        reset: bool = False,
+        chat_kwargs: Optional[dict] = None,
+        tool_kwargs: Optional[dict] = None,
+    ):
+        # Initialize the base agent with all common parameters
+        super().__init__(
+            name=name,
+            system_prompt=system_prompt,
+            model=model,
+            n_latest_messages=n_latest_messages,  # None for unlimited history
+            tools=tools,
+            reset=reset,
+            chat_kwargs=chat_kwargs,
+            tool_kwargs=tool_kwargs,
+        )
+
+    def _setup_chat_pipeline(self):
+        """
+        Configure the chat completion pipeline using Pixeltable's computed columns.
+        This method implements the abstract method from BaseAgent.
+
+        The pipeline consists of 4 steps:
+        1. Retrieve recent messages from memory
+        2. Format messages for Bedrock Claude
+        3. Get completion from Bedrock
+        4. Extract the response text
+
+        Note: The pipeline automatically handles memory limits based on n_latest_messages.
+        When set to None, it maintains unlimited conversation history.
+        """
+
+        # Step 1: Define a query to get recent messages
+        @pxt.query
+        def get_recent_memory(current_timestamp: pxt.Timestamp) -> list[dict]:
+            """
+            Get recent messages from memory, respecting n_latest_messages limit if set.
+            Messages are ordered by timestamp (newest first).
+            Returns all messages if n_latest_messages is None.
+            """
+            query = (
+                self.memory.where(self.memory.timestamp < current_timestamp)
+                .order_by(self.memory.timestamp, asc=False)
+                .select(role=self.memory.role, content=self.memory.content)
+            )
+            if self.n_latest_messages is not None:
+                query = query.limit(self.n_latest_messages)
+            return query
+
+        # Step 2: Add computed columns to process the conversation
+        # First, get the conversation history
+        self.agent.add_computed_column(
+            memory_context=get_recent_memory(self.agent.timestamp), if_exists="ignore"
+        )
+
+        # Format messages for Bedrock Claude
+        self.agent.add_computed_column(
+            messages=create_messages(
+                self.agent.memory_context,
+                self.agent.user_message,
+                self.agent.image,
+            ),
+            if_exists="ignore",
+        )
+
+        # Get Bedrock Claude's API response
+        self.agent.add_computed_column(
+            response=converse(
+                messages=self.agent.messages,
+                model_id=self.model,
+                system=[{"text": self.system_prompt}],
+                **self.chat_kwargs,
+            ),
+            if_exists="ignore",
+        )
+
+        # Extract the final response text from Bedrock Claude's specific response format
+        self.agent.add_computed_column(
+            agent_response=self.agent.response.output.message.content[0].text, 
+            if_exists="ignore"
+        )
+
+    def _setup_tools_pipeline(self):
+        """
+        Configure the tool execution pipeline using Pixeltable's computed columns.
+        This method implements the abstract method from BaseAgent.
+
+        The pipeline has 4 stages:
+        1. Get initial response from Bedrock Claude with potential tool calls
+        2. Execute any requested tools
+        3. Format tool results for follow-up
+        4. Get final response incorporating tool outputs
+
+        Note: For tool calls, we only use the current message without conversation history
+        to ensure tool execution is based solely on the current request.
+        """
+        # Stage 1: Get initial response with potential tool calls
+        # Note: We only use the current tool prompt without memory context
+        self.tools_table.add_computed_column(
+            initial_response=converse(
+                model_id=self.model,
+                system=[{"text": self.system_prompt}],
+                messages=[{"role": "user", "content": [{"text": self.tools_table.tool_prompt}]}],
+                tool_config=self.tools,  # Pass available tools to Bedrock Claude
+                **self.tool_kwargs,
+            ),
+            if_exists="ignore",
+        )
+
+        # Stage 2: Execute any tools that Bedrock Claude requested
+        self.tools_table.add_computed_column(
+            tool_output=invoke_tools(self.tools, self.tools_table.initial_response),
+            if_exists="ignore",
+        )
+
+        # Stage 3: Format tool results for follow-up
+        self.tools_table.add_computed_column(
+            tool_response_prompt=pxtf.string.format(
+                "{0}: {1}", self.tools_table.tool_prompt, self.tools_table.tool_output
+            ),
+            if_exists="ignore",
+        )
+
+        # Stage 4: Get final response incorporating tool results
+        # Again, we only use the current tool response without memory context
+        self.tools_table.add_computed_column(
+            final_response=converse(
+                model_id=self.model,
+                system=[{"text": self.system_prompt}],
+                messages=[
+                    {"role": "user", "content": [{"text": self.tools_table.tool_response_prompt}]}
+                ],
+                **self.tool_kwargs,
+            ),
+            if_exists="ignore",
+        )
+
+        # Extract the final response text from Bedrock Claude's format
+        self.tools_table.add_computed_column(
+            tool_answer=self.tools_table.final_response.output.message.content[0].text,
+            if_exists="ignore",
+        )

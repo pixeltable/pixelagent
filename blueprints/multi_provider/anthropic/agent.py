@@ -3,7 +3,7 @@ from typing import Optional
 import pixeltable as pxt
 import pixeltable.functions as pxtf
 
-from pixelagent.core.base import BaseAgent
+from ..core.base import BaseAgent
 
 from .utils import create_messages
 
@@ -91,7 +91,9 @@ class Agent(BaseAgent):
         # Format messages for Claude (simpler than OpenAI as system prompt is passed separately)
         self.agent.add_computed_column(
             messages=create_messages(
-                self.agent.memory_context, self.agent.user_message
+                self.agent.memory_context,
+                self.agent.user_message,
+                self.agent.image,
             ),
             if_exists="ignore",
         )

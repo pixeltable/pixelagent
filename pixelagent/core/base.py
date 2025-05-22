@@ -220,7 +220,8 @@ class BaseAgent(ABC):
         if not self.tools:
             return "No tools configured for this agent."
 
-        now = datetime.now()
+        # Use separate timestamps for user and assistant messages
+        user_timestamp = datetime.now()
         user_message_id = str(uuid4())
         tool_invoke_id = str(uuid4())
         assistant_message_id = str(uuid4())
@@ -232,7 +233,7 @@ class BaseAgent(ABC):
                     "message_id": user_message_id,
                     "role": "user",
                     "content": prompt,
-                    "timestamp": now,
+                    "timestamp": user_timestamp,
                 }
             ]
         )
@@ -243,7 +244,7 @@ class BaseAgent(ABC):
                 {
                     "tool_invoke_id": tool_invoke_id,
                     "tool_prompt": prompt,
-                    "timestamp": now,
+                    "timestamp": user_timestamp,
                 }
             ]
         )
@@ -256,14 +257,15 @@ class BaseAgent(ABC):
         )
         tool_answer = result["tool_answer"][0]
 
-        # Store LLM's response in memory
+        # Store LLM's response in memory with a slightly later timestamp
+        assistant_timestamp = datetime.now()
         self.memory.insert(
             [
                 {
                     "message_id": assistant_message_id,
                     "role": "assistant",
                     "content": tool_answer,
-                    "timestamp": now,
+                    "timestamp": assistant_timestamp,
                 }
             ]
         )

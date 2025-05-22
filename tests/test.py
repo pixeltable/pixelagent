@@ -1,20 +1,12 @@
-"""
-Test script for the AWS Bedrock Agent Blueprint.
-
-This script demonstrates how to create and use a Bedrock-powered agent
-with both basic chat functionality and tool execution.
-
-Prerequisites:
-- AWS credentials configured (via AWS CLI, environment variables, or IAM role)
-- Access to AWS Bedrock models
-"""
+from typing import List
 
 import pixeltable as pxt
-from agent import Agent
+
+from pixelagent.openai import Agent
 
 
 @pxt.udf
-def stock_price(ticker: str) -> float:
+def stock_price(ticker: str) -> List[float]:
     """Get the current stock price for a given ticker symbol."""
     # This is a mock implementation for testing
     prices = {
@@ -24,15 +16,15 @@ def stock_price(ticker: str) -> float:
         "AMZN": 178.23,
         "NVDA": 131.17,
     }
-    return prices.get(ticker.upper(), 0.0)
+    return [prices.get(ticker.upper(), 0.0)]
 
 
 def main():
     # Create a Bedrock agent with memory
     agent = Agent(
-        name="bedrock_test",
+        name="openai_test",
         system_prompt="You are a helpful assistant that can answer questions and use tools.",
-        model="amazon.nova-pro-v1:0",  # Use the Amazon Nova Pro model
+        model="gpt-4.1-2025-04-14",  # Use the Amazon Nova Pro model
         n_latest_messages=None,  # Unlimited memory to ensure all messages are included
         tools=pxt.tools(stock_price),  # Register the stock_price tool
         reset=True,  # Reset the agent's memory for testing
@@ -61,7 +53,7 @@ def main():
     print(f"Agent: {response}\n")
     
     # Another tool call - should not remember previous tool call
-    user_message = "What about AAPL?"
+    user_message = "What about stock price of AAPL?"
     print(f"User: {user_message}")
     response = agent.tool_call(user_message)
     print(f"Agent: {response}\n")
