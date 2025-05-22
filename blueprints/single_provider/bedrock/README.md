@@ -5,9 +5,11 @@ This blueprint demonstrates how to create a conversational AI agent powered by A
 ## Features
 
 - **Persistent Memory**: Maintains conversation history in a structured database
+- **Unlimited Memory Support**: Option to maintain complete conversation history without limits
 - **Tool Execution**: Supports function calling with AWS Bedrock models
 - **Image Support**: Can process and respond to images
 - **Configurable Context Window**: Control how many previous messages are included in the context
+- **Modular Architecture**: Built on a flexible BaseAgent design for maintainability and extensibility
 
 ## Prerequisites
 
@@ -37,7 +39,7 @@ agent = Agent(
     name="my_bedrock_agent",
     system_prompt="You are a helpful assistant.",
     model="amazon.nova-pro-v1:0",  # You can use other Bedrock models like "anthropic.claude-3-sonnet-20240229-v1:0"
-    n_latest_messages=10,  # Number of recent messages to include in context
+    n_latest_messages=10,  # Number of recent messages to include in context (set to None for unlimited)
     reset=True  # Start with a fresh conversation history
 )
 
@@ -132,6 +134,44 @@ agent = Agent(
 )
 ```
 
+## Unlimited Memory Support
+
+You can create an agent with unlimited conversation history by setting `n_latest_messages=None`:
+
+```python
+# Create an agent with unlimited memory
+agent = Agent(
+    name="memory_agent",
+    system_prompt="You are a helpful assistant with perfect memory.",
+    model="amazon.nova-pro-v1:0",
+    n_latest_messages=None,  # No limit on conversation history
+    reset=True
+)
+
+# The agent will remember all previous interactions
+response1 = agent.chat("My name is Alice.")
+response2 = agent.chat("What's my name?")  # Agent will remember
+response3 = agent.chat("Do you remember my name?")  # Agent will still remember
+```
+
+This is particularly useful for applications that require long-term memory or context awareness.
+
+## Architecture
+
+This blueprint uses a modular architecture with:
+
+1. **BaseAgent**: An abstract base class that handles common functionality like:
+   - Table setup and management
+   - Memory persistence
+   - Core chat and tool call implementations
+
+2. **Agent**: The Bedrock-specific implementation that inherits from BaseAgent and implements:
+   - Bedrock-specific message formatting
+   - Bedrock API integration
+   - Tool calling for Bedrock models
+
+This architecture makes the code more maintainable and extensible.
+
 ## How It Works
 
 The agent uses Pixeltable to create and manage three tables:
@@ -144,9 +184,14 @@ When you send a message to the agent, it:
 
 1. Stores your message in the memory table
 2. Triggers a pipeline that retrieves recent conversation history
-3. Formats the messages for the Bedrock API
+3. Formats the messages for the Bedrock API (with proper content structure)
 4. Gets a response from the Bedrock model
 5. Stores the response in memory
 6. Returns the response to you
 
-Tool execution follows a similar pattern but includes additional steps to handle the tool calling handshake.
+Tool execution follows a similar pattern but uses a specialized pipeline:
+1. The user's prompt is sent to Bedrock with available tools
+2. Bedrock decides which tools to call and with what parameters
+3. The tools are executed and their results are returned
+4. The results are sent back to Bedrock for a final response
+5. The response is stored in memory and returned to the user
