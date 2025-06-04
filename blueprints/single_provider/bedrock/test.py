@@ -10,7 +10,7 @@ Prerequisites:
 """
 
 import pixeltable as pxt
-from agent import Agent
+from blueprints.single_provider.bedrock.agent import Agent
 
 
 @pxt.udf
