@@ -1,17 +1,18 @@
 # Building Multi-Provider Agents with Pixeltable: A Step-by-Step Guide
 
-This tutorial takes your agent engineering skills to the next level by showing you how to build a unified agent framework that works seamlessly across different LLM providers (Anthropic, OpenAI, and AWS Bedrock). We'll extend the single-provider `Agent()` class into a flexible architecture with a shared base class and provider-specific implementations.
+This tutorial takes your agent engineering skills to the next level by showing you how to build a unified agent framework that works seamlessly across different LLM providers (Anthropic, OpenAI, AWS Bedrock, and Google Gemini). We'll extend the single-provider `Agent()` class into a flexible architecture with a shared base class and provider-specific implementations.
 
 ## Prerequisites
 
 - Install required packages:
   ```bash
-  pip install pixeltable anthropic openai boto3
+  pip install pixeltable anthropic openai boto3 google-genai
   ```
 - Set up your API keys:
   ```bash
   export ANTHROPIC_API_KEY='your-anthropic-api-key'
   export OPENAI_API_KEY='your-openai-api-key'
+  export GEMINI_API_KEY='your-gemini-api-key'
   # For AWS Bedrock, configure AWS credentials using AWS CLI or environment variables
   aws configure  # Or set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_REGION
   ```
@@ -188,6 +189,7 @@ With our architecture in place, using either provider becomes remarkably simple:
 from .anthropic import Agent as AnthropicAgent
 from .openai import Agent as OpenAIAgent
 from .bedrock import Agent as BedrockAgent
+from .gemini import Agent as GeminiAgent
 
 # Create agents with the same interface
 claude_agent = AnthropicAgent(
@@ -208,10 +210,17 @@ bedrock_agent = BedrockAgent(
     model="amazon.nova-pro-v1:0"  # Or other Bedrock models
 )
 
+gemini_agent = GeminiAgent(
+    name="gemini_assistant",
+    system_prompt="You are a helpful assistant.",
+    model="gemini-2.0-flash"
+)
+
 # Use them with the exact same interface
 claude_response = claude_agent.chat("Tell me about quantum computing")
 gpt_response = gpt_agent.chat("Tell me about quantum computing")
 bedrock_response = bedrock_agent.chat("Tell me about quantum computing")
+gemini_response = gemini_agent.chat("Tell me about quantum computing")
 ```
 
 This unified interface makes it easy to:
