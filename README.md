@@ -45,10 +45,10 @@ We see agents as the intersection of an LLM, storage, and orchestration. [Pixelt
 
 ## Connect blueprints to Cursor, Windsurf, Cline:
 
-- **[Anthropic](https://github.com/pixeltable/pixelagent/blob/main/blueprints/single-provider/anthropic/README.md)**
-- **[OpenAI](https://github.com/pixeltable/pixelagent/blob/main/blueprints/single-provider/openai/README.md)**
-- **[AWS Bedrock](https://github.com/pixeltable/pixelagent/blob/main/blueprints/single-provider/bedrock/README.md)** 
-- **[Multiprovider](https://github.com/pixeltable/pixelagent/tree/main/blueprints/multi-provider/README.md)**
+- **[Anthropic](https://github.com/pixeltable/pixelagent/blob/main/blueprints/single_provider/anthropic/README.md)**
+- **[OpenAI](https://github.com/pixeltable/pixelagent/blob/main/blueprints/single_provider/openai/README.md)**
+- **[AWS Bedrock](https://github.com/pixeltable/pixelagent/blob/main/blueprints/single_provider/bedrock/README.md)** 
+- **[Multiprovider](https://github.com/pixeltable/pixelagent/tree/main/blueprints/multi_provider/README.md)**
 
 ## Plug-and-Play Extensions 
 
