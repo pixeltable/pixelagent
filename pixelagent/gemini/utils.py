@@ -1,20 +1,14 @@
-import base64
-import io
-from typing import Optional
-
-import PIL
 import pixeltable as pxt
 
 
 @pxt.udf
 def create_content(
-    system_prompt: str,
     memory_context: list[dict],
     current_message: str,
 ) -> str:
     
-    # Build the conversation context as a text string
-    context = f"System: {system_prompt}\n\n"
+    # Build the conversation context as a text string without system prompt
+    context = ""
     
     # Add memory context
     for msg in memory_context:
