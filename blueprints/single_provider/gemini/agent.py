@@ -22,14 +22,12 @@ except ImportError:
 
 @pxt.udf
 def create_content(
-    system_prompt: str,
     memory_context: list[dict],
     current_message: str,
-    image: Optional[PIL.Image.Image] = None,
 ) -> str:
     
-    # Build the conversation context as a text string
-    context = f"System: {system_prompt}\n\n"
+    # Build the conversation context as a text string without system prompt
+    context = ""
     
     # Add memory context
     for msg in memory_context:
@@ -183,19 +181,23 @@ class Agent:
             memory_context=get_recent_memory(self.agent.timestamp),
             if_exists="ignore",
         )
-        # Create content for Gemini
+        # Create content for Gemini without system prompt
         self.agent.add_computed_column(
             prompt=create_content(
-                self.agent.system_prompt,
                 self.agent.memory_context,
                 self.agent.user_message,
             ),
             if_exists="ignore",
         )
+        
+        # Prepare config with system instruction
+        chat_config = self.chat_kwargs.copy() if self.chat_kwargs else {}
+        chat_config['system_instruction'] = self.system_prompt
+        
         # Get api response
         self.agent.add_computed_column(
             response=generate_content(
-                contents=self.agent.prompt, model=self.model, **self.chat_kwargs
+                contents=self.agent.prompt, model=self.model, config=chat_config
             ),
             if_exists="ignore",
         )
@@ -212,13 +214,17 @@ class Agent:
         2. Execute the tools
         3. Pass the tool results back to Gemini for final response
         """
+        # Prepare config with system instruction for tools
+        tool_config = self.tool_kwargs.copy() if self.tool_kwargs else {}
+        tool_config['system_instruction'] = self.system_prompt
+        
         # Get initial response from Gemini with tool calls
         self.tools_table.add_computed_column(
             initial_response=generate_content(
                 contents=self.tools_table.tool_prompt,
                 model=self.model,
                 tools=self.tools,
-                **self.tool_kwargs,
+                config=tool_config,
             ),
             if_exists="ignore",
         )
@@ -239,7 +245,7 @@ class Agent:
             final_response=generate_content(
                 contents=self.tools_table.tool_response_prompt,
                 model=self.model,
-                **self.tool_kwargs,
+                config=tool_config,
             ),
             if_exists="ignore",
         )

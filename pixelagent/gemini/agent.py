@@ -82,21 +82,23 @@ class Agent(BaseAgent):
             if_exists="ignore",
         )
 
-        # Format content for Gemini with system prompt
+        # Format content for Gemini without system prompt
         self.agent.add_computed_column(
             prompt=create_content(
-                self.agent.system_prompt,
                 self.agent.memory_context,
                 self.agent.user_message,
-                self.agent.image,
             ),
             if_exists="ignore",
         )
 
+        # Prepare config with system instruction
+        chat_config = self.chat_kwargs.copy() if self.chat_kwargs else {}
+        chat_config['system_instruction'] = self.system_prompt
+
         # Get Gemini's API response
         self.agent.add_computed_column(
             response=generate_content(
-                contents=self.agent.prompt, model=self.model, **self.chat_kwargs
+                contents=self.agent.prompt, model=self.model, config=chat_config
             ),
             if_exists="ignore",
         )
@@ -118,13 +120,17 @@ class Agent(BaseAgent):
         3. Format tool results for follow-up
         4. Get final response incorporating tool outputs
         """
+        # Prepare config with system instruction for tools
+        tool_config = self.tool_kwargs.copy() if self.tool_kwargs else {}
+        tool_config['system_instruction'] = self.system_prompt
+
         # Stage 1: Get initial response with potential tool calls
         self.tools_table.add_computed_column(
             initial_response=generate_content(
                 contents=self.tools_table.tool_prompt,
                 model=self.model,
                 tools=self.tools,  # Pass available tools to Gemini
-                **self.tool_kwargs,
+                config=tool_config,
             ),
             if_exists="ignore",
         )
@@ -148,7 +154,7 @@ class Agent(BaseAgent):
             final_response=generate_content(
                 contents=self.tools_table.tool_response_prompt,
                 model=self.model,
-                **self.tool_kwargs,
+                config=tool_config,
             ),
             if_exists="ignore",
         )
