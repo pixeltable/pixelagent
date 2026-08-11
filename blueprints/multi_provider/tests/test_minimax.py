@@ -5,6 +5,7 @@ root_dir = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(root_dir))
 
 import pixeltable as pxt
+
 from blueprints.multi_provider.minimax.agent import Agent as MiniMaxAgent
 
 
