@@ -25,6 +25,8 @@ class Agent(BaseAgent):
 
     The agent supports both limited and unlimited conversation history through
     the n_latest_messages parameter.
+
+    `max_tokens` is required by Anthropic's messages API; it defaults to 4096.
     """
 
     def __init__(
@@ -33,11 +35,16 @@ class Agent(BaseAgent):
         system_prompt: str,
         model: str = "claude-3-5-sonnet-latest",
         n_latest_messages: Optional[int] = 10,
-        tools: Optional[pxt.tools] = None,
+        tools: pxt.Tools | None = None,
         reset: bool = False,
         chat_kwargs: Optional[dict] = None,
         tool_kwargs: Optional[dict] = None,
+        max_tokens: int = 4096,
     ):
+        # `max_tokens` is required by Anthropic's messages API and is read by
+        # _setup_chat_pipeline(), which the base constructor calls. Assign it first.
+        self.max_tokens = max_tokens
+
         # Initialize the base agent with all common parameters
         super().__init__(
             name=name,
@@ -98,13 +105,14 @@ class Agent(BaseAgent):
             if_exists="ignore",
         )
 
-        # Get Claude's API response (note: system prompt passed directly to messages())
+        # Get Claude's API response. The system prompt and any extra options travel
+        # through `model_kwargs`; `messages()` no longer accepts a top-level `system=`.
         self.agent.add_computed_column(
             response=messages(
-                messages=self.agent.messages,
                 model=self.model,
-                system=self.system_prompt,  # Claude handles system prompt differently
-                **self.chat_kwargs,
+                messages=self.agent.messages,
+                max_tokens=self.max_tokens,
+                model_kwargs={"system": self.system_prompt, **self.chat_kwargs},
             ),
             if_exists="ignore",
         )
@@ -132,10 +140,10 @@ class Agent(BaseAgent):
         self.tools_table.add_computed_column(
             initial_response=messages(
                 model=self.model,
-                system=self.system_prompt,  # Include system prompt for consistent behavior
                 messages=[{"role": "user", "content": self.tools_table.tool_prompt}],
+                max_tokens=self.max_tokens,
+                model_kwargs={"system": self.system_prompt, **self.tool_kwargs},
                 tools=self.tools,  # Pass available tools to Claude
-                **self.tool_kwargs,
             ),
             if_exists="ignore",
         )
@@ -158,11 +166,11 @@ class Agent(BaseAgent):
         self.tools_table.add_computed_column(
             final_response=messages(
                 model=self.model,
-                system=self.system_prompt,
                 messages=[
                     {"role": "user", "content": self.tools_table.tool_response_prompt}
                 ],
-                **self.tool_kwargs,
+                max_tokens=self.max_tokens,
+                model_kwargs={"system": self.system_prompt, **self.tool_kwargs},
             ),
             if_exists="ignore",
         )

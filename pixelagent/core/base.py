@@ -30,7 +30,7 @@ class BaseAgent(ABC):
         system_prompt: str,
         model: str,
         n_latest_messages: Optional[int] = 10,
-        tools: Optional[pxt.tools] = None,
+        tools: pxt.Tools | None = None,
         reset: bool = False,
         chat_kwargs: Optional[dict] = None,
         tool_kwargs: Optional[dict] = None,
@@ -101,7 +101,7 @@ class BaseAgent(ABC):
                 "user_message": pxt.String,  # User's message content
                 "timestamp": pxt.Timestamp,  # When the message was received
                 "system_prompt": pxt.String,  # System prompt for Claude
-                "image": pxt.Image,  # Optional image attachment
+                "image": pxt.Image | None,  # Optional image attachment
             },
             if_exists="ignore",
         )

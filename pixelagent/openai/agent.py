@@ -30,7 +30,7 @@ class Agent(BaseAgent):
         system_prompt: str,
         model: str = "gpt-4o-mini",
         n_latest_messages: Optional[int] = 10,
-        tools: Optional[pxt.tools] = None,
+        tools: pxt.Tools | None = None,
         reset: bool = False,
         chat_kwargs: Optional[dict] = None,
         tool_kwargs: Optional[dict] = None,
@@ -96,7 +96,9 @@ class Agent(BaseAgent):
         # Get OpenAI's API response
         self.agent.add_computed_column(
             response=chat_completions(
-                messages=self.agent.prompt, model=self.model, **self.chat_kwargs
+                model=self.model,
+                messages=self.agent.prompt,
+                model_kwargs=self.chat_kwargs or None,
             ),
             if_exists="ignore",
         )
@@ -123,8 +125,8 @@ class Agent(BaseAgent):
             initial_response=chat_completions(
                 model=self.model,
                 messages=[{"role": "user", "content": self.tools_table.tool_prompt}],
+                model_kwargs=self.tool_kwargs or None,
                 tools=self.tools,  # Pass available tools to OpenAI
-                **self.tool_kwargs,
             ),
             if_exists="ignore",
         )
@@ -150,7 +152,7 @@ class Agent(BaseAgent):
                 messages=[
                     {"role": "user", "content": self.tools_table.tool_response_prompt},
                 ],
-                **self.tool_kwargs,
+                model_kwargs=self.tool_kwargs or None,
             ),
             if_exists="ignore",
         )

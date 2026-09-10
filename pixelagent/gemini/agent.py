@@ -30,7 +30,7 @@ class Agent(BaseAgent):
         system_prompt: str,
         model: str = "gemini-2.0-flash",
         n_latest_messages: Optional[int] = 10,
-        tools: Optional[pxt.tools] = None,
+        tools: pxt.Tools | None = None,
         reset: bool = False,
         chat_kwargs: Optional[dict] = None,
         tool_kwargs: Optional[dict] = None,

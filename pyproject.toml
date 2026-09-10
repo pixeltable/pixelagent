@@ -1,15 +1,15 @@
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=2.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "pixelagent"
 version = "0.1.6"
-description = "A modular AI agent framework supporting OpenAI and Anthropic models"
+description = "A Pixeltable-native agent framework for OpenAI, Anthropic, AWS Bedrock and Google Gemini"
 license = "Apache-2.0"
 readme = "README.md"
-requires-python = ">=3.10,<4.0"
-authors = [{ name = "Pixeltable, Inc.", email = "contact@pixeltable.com>" }]
+requires-python = ">=3.11,<4.0"
+authors = [{ name = "Pixeltable, Inc.", email = "contact@pixeltable.com" }]
 keywords = [
     "data-science", "machine-learning", "database", "ai", "computer-vision",
     "chatbot", "ml", "artificial-intelligence", "feature-engineering", "multimodal",
@@ -22,7 +22,6 @@ classifiers = [
     "Operating System :: MacOS",
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX :: Linux",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -31,7 +30,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "pixeltable (>=0.3.15)"
+    "pixeltable>=0.7.6,<0.8",
 ]
 
 [project.urls]
@@ -39,24 +38,23 @@ homepage = "https://pixeltable.com/"
 repository = "https://github.com/pixeltable/pixelagent"
 documentation = "https://docs.pixeltable.com/docs/libraries/pixelagent"
 
-[tool.poetry]
-requires-poetry = ">=2.0"
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.9.7",
+    # Provider SDKs: the keyless smoke suite imports all four agent modules.
+    "openai>=1.0",
+    "anthropic>=0.40",
+    "boto3>=1.35",
+    "google-genai>=1.0",
+]
 
-[tool.poetry.group.dev]
-optional = true
+[tool.ruff]
+line-length = 120
+target-version = "py311"
 
-[tool.poetry.group.dev.dependencies]
-# pytest-related
-pytest = "^7.2.1"
-pytest-xdist = { extras = ["psutil"], version = "^3.3.1" }
-pytest-rerunfailures = "^14.0.0"
-coverage = "^7.4"
-# type checking
-mypy = "^1.13.0"
-# linting
-ruff = "^0.9.7"
-# mkdocs-related
-mkdocs = "^1.6.0"
-mkdocs-material = "^9.5.23"
-mkdocstrings-python = "^1.10.2"
-black = ">=24.4"  # Needed for mkdocs
+[tool.ruff.lint]
+# Pinned explicitly: ruff's implicit default set changes between releases, and the
+# `test` job installs whatever ruff uv resolves. This is a correctness gate
+# (undefined names, unused imports, syntax) plus import order, not a style rewrite.
+select = ["E4", "E7", "E9", "F", "I"]

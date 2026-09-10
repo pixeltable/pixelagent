@@ -34,7 +34,7 @@ class Agent(BaseAgent):
         system_prompt: str,
         model: str = "amazon.nova-pro-v1:0",
         n_latest_messages: Optional[int] = 10,
-        tools: Optional[pxt.tools] = None,
+        tools: pxt.Tools | None = None,
         reset: bool = False,
         chat_kwargs: Optional[dict] = None,
         tool_kwargs: Optional[dict] = None,
@@ -102,10 +102,10 @@ class Agent(BaseAgent):
         # Get Bedrock Claude's API response
         self.agent.add_computed_column(
             response=converse(
-                messages=self.agent.messages,
                 model_id=self.model,
+                messages=self.agent.messages,
                 system=[{"text": self.system_prompt}],
-                **self.chat_kwargs,
+                inference_config=self.chat_kwargs or None,
             ),
             if_exists="ignore",
         )
@@ -135,10 +135,10 @@ class Agent(BaseAgent):
         self.tools_table.add_computed_column(
             initial_response=converse(
                 model_id=self.model,
-                system=[{"text": self.system_prompt}],
                 messages=[{"role": "user", "content": [{"text": self.tools_table.tool_prompt}]}],
+                system=[{"text": self.system_prompt}],
+                inference_config=self.tool_kwargs or None,
                 tool_config=self.tools,  # Pass available tools to Bedrock Claude
-                **self.tool_kwargs,
             ),
             if_exists="ignore",
         )
@@ -162,11 +162,11 @@ class Agent(BaseAgent):
         self.tools_table.add_computed_column(
             final_response=converse(
                 model_id=self.model,
-                system=[{"text": self.system_prompt}],
                 messages=[
                     {"role": "user", "content": [{"text": self.tools_table.tool_response_prompt}]}
                 ],
-                **self.tool_kwargs,
+                system=[{"text": self.system_prompt}],
+                inference_config=self.tool_kwargs or None,
             ),
             if_exists="ignore",
         )
