@@ -1,5 +1,0 @@
-pixeltable
-openai
-anthropic
-boto3
-google-genai
