@@ -1,6 +1,6 @@
 import pixeltable as pxt
-from pixeltable.functions.huggingface import sentence_transformer
 from pixeltable.functions.document import document_splitter
+from pixeltable.functions.huggingface import sentence_transformer
 
 # Initialize app structure
 pxt.drop_dir("pdf_search", if_not_exists="ignore", force=True)

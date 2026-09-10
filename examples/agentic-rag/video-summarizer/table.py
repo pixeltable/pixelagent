@@ -3,12 +3,11 @@
 
 import pixeltable as pxt
 from pixeltable.functions import openai
+from pixeltable.functions.audio import audio_splitter
 from pixeltable.functions.huggingface import sentence_transformer
 from pixeltable.functions.openai import chat_completions
-from pixeltable.functions.video import extract_audio
-from pixeltable.functions.audio import audio_splitter
-from pixeltable.functions.video import frame_iterator
 from pixeltable.functions.string import string_splitter
+from pixeltable.functions.video import extract_audio, frame_iterator
 
 # Define the embedding model once for reuse
 EMBED_MODEL = sentence_transformer.using(model_id='intfloat/e5-large-v2')
