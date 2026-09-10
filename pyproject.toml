@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "pixelagent"
-version = "0.1.6"
+version = "0.2.0"
 description = "A Pixeltable-native agent framework for OpenAI, Anthropic, AWS Bedrock and Google Gemini"
 license = "Apache-2.0"
 readme = "README.md"
