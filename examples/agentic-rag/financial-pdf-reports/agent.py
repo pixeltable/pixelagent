@@ -1,4 +1,5 @@
 import pixeltable as pxt
+
 from pixelagent.openai import Agent
 
 # Connect to your tables
@@ -24,7 +25,7 @@ documents_t.insert({"pdf": url} for url in document_urls)
 # Search documents
 @pxt.query
 def find_documents(query: str) -> dict:
-    sim = documents_chunks.text.similarity(query)
+    sim = documents_chunks.text.similarity(string=query)
     return (
         documents_chunks.order_by(sim, asc=False)
         .select(

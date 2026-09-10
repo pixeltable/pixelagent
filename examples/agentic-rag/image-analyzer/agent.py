@@ -1,4 +1,5 @@
 import pixeltable as pxt
+
 from pixelagent.openai import Agent
 
 # Connect to your table
@@ -22,7 +23,7 @@ img_t.insert({"image": url} for url in image_urls)
 
 @pxt.query
 def find_images(query: str) -> dict:
-    sim = img_t.image_description.similarity(query)
+    sim = img_t.image_description.similarity(string=query)
     return (
         img_t.order_by(sim, asc=False)
         .select(img_t.image_description)

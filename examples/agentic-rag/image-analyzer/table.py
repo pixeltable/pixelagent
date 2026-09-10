@@ -1,6 +1,6 @@
 import pixeltable as pxt
-from pixeltable.functions.openai import vision
 from pixeltable.functions.huggingface import sentence_transformer
+from pixeltable.functions.openai import chat_completions
 
 # Initialize app structure
 pxt.drop_dir("image_search", force=True)
@@ -14,11 +14,16 @@ img_t = pxt.create_table(
 
 # Add OpenAI Vision analysis
 img_t.add_computed_column(
-  image_description=vision(
-      prompt="Describe the image. Be specific on the colors you see.",
-      image=img_t.image,
-      model="gpt-4o-mini",
-  )
+image_description=chat_completions(
+        model="gpt-4o-mini",
+        messages=[{
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Describe this image in detail."},
+                {"type": "image_url", "image_url": {"url": img_t.image}},
+            ],
+        }],
+    ).choices[0].message.content
 )
 
 # Configure embedding model

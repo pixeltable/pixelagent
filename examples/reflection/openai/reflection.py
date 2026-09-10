@@ -6,7 +6,7 @@
 # and iteratively improves based on its own critique.
 
 import pixeltable as pxt
-import yfinance as yf
+from reflection_tools import stock_info
 
 from pixelagent.openai import Agent
 
@@ -73,7 +73,7 @@ def reflection_loop(
         # Check if the reflection agent is satisfied with the response
         if "<OK>" in critique:
             if verbose > 0:
-                print(f"\n\nResponse is satisfactory. Stopping reflection loop.\n\n")
+                print("\n\nResponse is satisfactory. Stopping reflection loop.\n\n")
             break
 
         # Refine the response based on the critique
@@ -105,20 +105,6 @@ def reflection_loop(
 # ============================================================================
 # Define a financial data tool that our agent can use
 
-
-@pxt.udf
-def stock_info(ticker: str) -> dict:
-    """
-    Retrieve stock information for a given ticker symbol.
-
-    Args:
-        ticker (str): Stock ticker symbol (e.g., 'AAPL' for Apple)
-
-    Returns:
-        dict: Dictionary containing stock information and metrics
-    """
-    stock = yf.Ticker(ticker)
-    return stock.info
 
 
 # ============================================================================

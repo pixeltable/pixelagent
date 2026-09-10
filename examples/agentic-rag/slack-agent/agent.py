@@ -1,7 +1,7 @@
-from pixelagent.openai import Agent
 import pixeltable as pxt
-
 from tools import search_channel_messages
+
+from pixelagent.openai import Agent
 
 agent = Agent(
     name = "slackbot",

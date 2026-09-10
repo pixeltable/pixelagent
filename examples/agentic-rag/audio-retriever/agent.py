@@ -1,4 +1,5 @@
 import pixeltable as pxt
+
 from pixelagent.openai import Agent
 
 # Connect to your tables and views
@@ -14,7 +15,7 @@ audio_t.insert([{
 @pxt.query
 def audio_search(query_text: str) -> str:
     min_similarity = 0.8
-    sim = sentences_view.text.similarity(query_text)
+    sim = sentences_view.text.similarity(string=query_text)
     return (
         sentences_view.where(sim >= min_similarity)
         .order_by(sim, asc=False)

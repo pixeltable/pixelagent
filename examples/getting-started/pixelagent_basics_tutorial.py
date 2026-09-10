@@ -7,6 +7,7 @@
 # pip install pixelagent openai
 
 import pixeltable as pxt
+from tutorial_tools import weather
 
 from pixelagent.openai import Agent
 
@@ -54,19 +55,6 @@ print(memory.collect())
 
 
 # Define a simple weather tool as a user-defined function (UDF)
-@pxt.udf
-def weather(city: str) -> str:
-    """
-    Get the current weather for a specified city.
-
-    Args:
-        city (str): The name of the city to check weather for
-
-    Returns:
-        str: Weather description for the requested city
-    """
-    return f"The weather in {city} is sunny."
-
 
 # Add tool to our exisitng agent with custom system prompt instructions
 agent = Agent(

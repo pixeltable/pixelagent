@@ -2,10 +2,10 @@
 # prerequisite: run `python -m spacy download en_core_web_sm` first
 
 import pixeltable as pxt
+import spacy
 from pixeltable.functions import whisper
 from pixeltable.functions.huggingface import sentence_transformer
-from pixeltable.iterators.string import StringSplitter
-import spacy
+from pixeltable.functions.string import string_splitter
 
 # Initialize spaCy
 nlp = spacy.load("en_core_web_sm")
@@ -32,7 +32,7 @@ audio_t.add_computed_column(
 sentences_view = pxt.create_view(
     "audio_search.audio_sentence_chunks",
     audio_t,
-    iterator=StringSplitter.create(
+    iterator=string_splitter(
         text=audio_t.transcription.text, 
         separators="sentence"
     )

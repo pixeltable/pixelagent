@@ -1,8 +1,8 @@
 import os
-from slack_bolt import App
-import pixeltable as pxt
 
+import pixeltable as pxt
 from dotenv import load_dotenv
+from slack_bolt import App
 
 load_dotenv()
 

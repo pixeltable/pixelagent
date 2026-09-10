@@ -10,7 +10,7 @@ from datetime import datetime
 
 # Import necessary libraries
 import pixeltable as pxt  # Database for AI agent memory
-import yfinance as yf  # Financial data API
+from react_tools import stock_info
 
 from pixelagent.openai import Agent  # Agent framework
 
@@ -20,20 +20,6 @@ from pixelagent.openai import Agent  # Agent framework
 # The agent needs access to external tools to gather financial information
 # Here we create a UDF (User-Defined Function) that fetches stock information
 
-
-@pxt.udf
-def stock_info(ticker: str) -> dict:
-    """
-    Retrieve comprehensive stock information for a given ticker symbol.
-
-    Args:
-        ticker (str): Stock ticker symbol (e.g., 'AAPL' for Apple)
-
-    Returns:
-        dict: Dictionary containing stock information and metrics
-    """
-    stock = yf.Ticker(ticker)
-    return stock.info
 
 
 # List of tools available to the agent

@@ -3,6 +3,7 @@
 import pixeltable as pxt
 import pixeltable.functions as pxtf
 from pixeltable.functions.openai import embeddings
+
 from pixelagent.openai import Agent
 
 embed_model = embeddings.using(model="text-embedding-3-small")
@@ -36,7 +37,7 @@ memory.add_embedding_index(
 # We can search for context from previous conversations that semantically match the query
 @pxt.query
 def search_memory(query: str) -> list[dict]:
-    sim = memory.user_content.similarity(query, idx="user_content_idx")
+    sim = memory.user_content.similarity(string=query, idx="user_content_idx")
     res = (
         memory.order_by(sim, asc=False)
         .select(memory.user_content, sim=sim)

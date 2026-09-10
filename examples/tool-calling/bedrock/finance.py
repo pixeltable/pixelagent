@@ -1,25 +1,7 @@
-import random
-
 import pixeltable as pxt
-import yfinance as yf
+from finance_tools import analyst_recommendation, stock_price
 
 from pixelagent.bedrock import Agent
-
-
-# Define a simple tool with a description
-@pxt.udf
-def stock_price(ticker: str) -> dict:
-    """Retrieve the current stock price for a given ticker symbol."""
-    stock = yf.Ticker(ticker)
-    return stock.info
-
-
-# Define a new tool to get a random trading action
-@pxt.udf
-def analyst_recommendation(ticker: str) -> str:
-    """Randomly select a trading action: buy, sell, or hold."""
-    return random.choice(["buy", "sell", "hold"])
-
 
 # Create an agent with tools
 agent = Agent(
