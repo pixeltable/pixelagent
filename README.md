@@ -43,12 +43,22 @@ We see agents as the intersection of an LLM, storage, and orchestration. [Pixelt
 - **Observability**: Complete traceability with automatic logging of messages, tool calls, and performance metrics
 - **Agentic Extensions**: Add reasoning, reflection, memory, knowledge, and team workflows.
 
-## Connect blueprints to Cursor, Windsurf, Cline:
+## Use with Cursor, Windsurf, Cline
 
-- **[Anthropic](https://github.com/pixeltable/pixelagent/blob/main/blueprints/single_provider/anthropic/README.md)**
-- **[OpenAI](https://github.com/pixeltable/pixelagent/blob/main/blueprints/single_provider/openai/README.md)**
-- **[AWS Bedrock](https://github.com/pixeltable/pixelagent/blob/main/blueprints/single_provider/bedrock/README.md)** 
-- **[Multi-provider](https://github.com/pixeltable/pixelagent#readme)** - `pip install pixelagent` gives you all four providers; see the Quick Start above.
+Install the package and point your editor at it:
+
+```bash
+pip install pixelagent
+```
+
+All four providers ship in the package, so an agent is the Quick Start above:
+
+```python
+from pixelagent.openai import Agent   # or .anthropic, .bedrock, .gemini
+
+agent = Agent(name="my_agent", system_prompt="You are a helpful assistant.")
+print(agent.chat("Hello"))
+```
 
 ## Plug-and-Play Extensions 
 
@@ -95,6 +105,8 @@ from pixelagent.anthropic import Agent
 import yfinance as yf
 
 # Define a tool as a UDF
+# In a module, e.g. tools.py -- pixeltable rejects a @pxt.udf defined in a
+# script's global namespace, because it must be importable by name.
 @pxt.udf
 def stock_price(ticker: str) -> dict:
     """Get stock information for a ticker symbol"""
@@ -140,90 +152,101 @@ conversational_agent = Agent(
 # ReAct pattern for step-by-step reasoning and planning
 import re
 from datetime import datetime
-from pixelagent.openai import Agent
+
 import pixeltable as pxt
 
-# Define a tool
-@pxt.udf
-def stock_info(ticker: str) -> dict:
-    """Get stock information for analysis"""
-    import yfinance as yf
-    stock = yf.Ticker(ticker)
-    return stock.info
+# Tools live in a module, not beside the agent: pixeltable needs a UDF to be
+# importable by name so a stored computed column can find it again.
+from react_tools import stock_info
 
-# ReAct system prompt with structured reasoning pattern
+from pixelagent.openai import Agent
+
 REACT_PROMPT = """
 Today is {date}
 
 IMPORTANT: You have {max_steps} maximum steps. You are on step {step}.
 
-Follow this EXACT step-by-step reasoning and action pattern:
-
 1. THOUGHT: Think about what information you need to answer the question.
-2. ACTION: Either use a tool OR write "FINAL" if you're ready to give your final answer.
+2. ACTION: Either use a tool OR write "FINAL" if you are ready to answer.
 
 Available tools:
 {tools}
-
-Always structure your response with these exact headings:
 
 THOUGHT: [your reasoning]
 ACTION: [tool_name] OR simply write "FINAL"
 """
 
-# Helper function to extract sections from responses
+
 def extract_section(text, section_name):
     pattern = rf'{section_name}:?\s*(.*?)(?=\n\s*(?:THOUGHT|ACTION):|$)'
     match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
     return match.group(1).strip() if match else ""
 
-# Execute ReAct planning loop
+
+# One agent, built once. The system prompt is per-turn data, so a step that
+# needs a different prompt overrides it on the call rather than rebuilding the
+# agent -- which is what this example used to do, and which now raises
+# SchemaConflict if the model or toolset differs.
+agent = Agent(
+    name="financial_planner",
+    system_prompt="You are a financial analyst.",
+    tools=pxt.tools(stock_info),
+    reset=True,
+)
+
+
 def run_react_loop(question, max_steps=5):
-    step = 1
-    while step <= max_steps:
-        # Dynamic system prompt with current step
-        react_system_prompt = REACT_PROMPT.format(
-            date=datetime.now().strftime("%Y-%m-%d"),
-            tools=["stock_info"],
-            step=step,
-            max_steps=max_steps,
+    for step in range(1, max_steps + 1):
+        response = agent.chat(
+            question,
+            system_prompt=REACT_PROMPT.format(
+                date=datetime.now().strftime("%Y-%m-%d"),
+                tools=["stock_info"],
+                step=step,
+                max_steps=max_steps,
+            ),
         )
-        
-        # Agent with updated system prompt
-        agent = Agent(
-            name="financial_planner",
-            system_prompt=react_system_prompt,
-            reset=False,  # Maintain memory between steps
-        )
-        
-        # Get agent's response for current step
-        response = agent.chat(question)
-        
-        # Extract action to determine next step
         action = extract_section(response, "ACTION")
-        
-        # Check if agent is ready for final answer
         if "FINAL" in action.upper():
             break
-            
-        # Call tool if needed
         if "stock_info" in action.lower():
-            tool_agent = Agent(
-                name="financial_planner",
-                tools=pxt.tools(stock_info)
-            )
-            tool_agent.tool_call(question)
-            
-        step += 1
-    
-    # Generate final recommendation
-    return Agent(name="financial_planner").chat(question)
+            agent.tool_call(question)
 
-# Run the planning loop
+    return agent.chat(question)
+
+
 recommendation = run_react_loop("Create an investment recommendation for AAPL")
 ```
 
 Check out our [tutorials](examples/) for more examples including reflection loops, planning patterns, and multi-provider implementations.
+
+## Migrating from 0.1.x
+
+0.2.0 runs on Pixeltable 0.7.6. On 0.7.3+ every 0.1.x agent was broken: a
+text-only `chat()` raised `expected non-None value`, and the Anthropic agent
+could not be constructed at all. Upgrade with `pip install -U pixelagent`.
+
+Four things changed for callers:
+
+- **Python 3.11+ is required.** Pixeltable dropped 3.10 in 0.7.2.
+- **Rebuilding an agent under the same name with a different `model` or
+  `tools` now raises `SchemaConflict`.** Previously the new argument was
+  silently discarded and the agent kept using the old model while reporting
+  the new one. Pass `reset=True` to rebuild, or use a different name.
+- **`system_prompt`, `model_kwargs`, `max_tokens` and `n_latest_messages` are
+  per-turn data**, so `chat()` takes them as overrides:
+  `agent.chat(msg, system_prompt="...")`. Varying a prompt no longer needs a
+  second agent.
+- **`chat()` gained `conversation_id`** (default `"default"`), so one agent
+  can hold several separate threads.
+
+`Agent(...)`, `.chat()`, `.tool_call()` and the `<name>.memory` / `<name>.agent`
+tables are otherwise unchanged.
+
+Two bugs are fixed that needed no API change: a failed turn no longer leaves an
+unanswered message in memory, and `chat()` no longer re-queries the row it just
+inserted.
+
 
 ## Tutorials and Examples
 
@@ -232,4 +255,4 @@ Check out our [tutorials](examples/) for more examples including reflection loop
 - **Specialized Directories**: Browse our example directories for deeper implementations of specific techniques
 
 
-Ready to start building? Dive into the blueprints, tweak them to your needs, and let Pixeltable handle the AI data infrastructure while you focus on innovation!
+Ready to start building? `pip install pixelagent`, work through the examples, and let Pixeltable handle the AI data infrastructure while you focus on your agent.
