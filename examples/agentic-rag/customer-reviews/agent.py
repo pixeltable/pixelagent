@@ -1,4 +1,5 @@
 import pixeltable as pxt
+
 from pixelagent.openai import Agent
 
 # Connect to your table
@@ -16,7 +17,7 @@ feedback_t.insert({"review": text} for text in feedback_texts)
 
 @pxt.query
 def find_feedback(query: str) -> dict:
-    sim = feedback_t.review.similarity(query)
+    sim = feedback_t.review.similarity(string=query)
     return (
         feedback_t.order_by(sim, asc=False)
         .select(feedback_t.review)

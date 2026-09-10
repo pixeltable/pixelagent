@@ -1,5 +1,5 @@
 import pixeltable as pxt
-from pixeltable.iterators import DocumentSplitter
+from pixeltable.functions.document import document_splitter
 from pixeltable.functions.huggingface import sentence_transformer
 
 # Initialize app structure
@@ -16,7 +16,7 @@ documents_t = pxt.create_table(
 documents_chunks = pxt.create_view(
     "pdf_search.document_chunks",
     documents_t,
-    iterator=DocumentSplitter.create(
+    iterator=document_splitter(
         document=documents_t.pdf,
         separators="token_limit",
         limit=300  # Tokens per chunk

@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pixeltable as pxt
 
 
@@ -19,3 +21,11 @@ def create_content(
     context += "Assistant: "
     
     return context
+
+
+@pxt.udf
+def merge_system_instruction(
+    system_prompt: str, model_kwargs: Optional[dict] = None
+) -> dict:
+    """Gemini takes the system prompt as `system_instruction` inside `config`."""
+    return {"system_instruction": system_prompt, **(model_kwargs or {})}

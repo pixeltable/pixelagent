@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import pixeltable as pxt
+
 from pixelagent.openai import Agent
 
 # Constants
@@ -22,7 +23,7 @@ video_index.insert({'video': video, 'uploaded_at': datetime.now()} for video in 
 
 @pxt.query
 def search_transcription(query: str) -> dict:
-    sim = transcription_chunks.text.similarity(query)
+    sim = transcription_chunks.text.similarity(string=query)
     return (
         transcription_chunks.order_by(sim, asc=False)
         .select(transcription_chunks.text)

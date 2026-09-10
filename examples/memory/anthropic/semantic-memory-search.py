@@ -25,7 +25,7 @@ memory.add_embedding_index(
 
 
 def semantic_search(query: str) -> list[dict]:
-    sim = memory.content.similarity(query, idx="content_idx")
+    sim = memory.content.similarity(string=query, idx="content_idx")
     res = (
         memory.order_by(sim, asc=False)
         .select(memory.content, sim=sim)

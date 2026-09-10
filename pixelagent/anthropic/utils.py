@@ -43,3 +43,15 @@ def create_messages(
     messages.append({"role": "user", "content": content_blocks})
 
     return messages
+
+
+@pxt.udf
+def merge_system(system_prompt: str, model_kwargs: Optional[dict] = None) -> dict:
+    """
+    Fold the system prompt into model_kwargs.
+
+    Anthropic's messages() no longer accepts a top-level `system=`, and the
+    system prompt is per-row data here, so it cannot be baked into the column
+    definition either. model_kwargs is the passthrough that carries it.
+    """
+    return {"system": system_prompt, **(model_kwargs or {})}

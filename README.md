@@ -4,7 +4,7 @@
   <!-- Badges - First Row -->
   <p>
     <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-0530AD.svg" alt="License"></a>
-    <img src="https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue?logo=python&logoColor=white" alt="Python Versions">
+    <img src="https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?logo=python&logoColor=white" alt="Python Versions">
     <img src="https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-E5DDD4" alt="Platform Support">
   </p>
   
@@ -48,7 +48,7 @@ We see agents as the intersection of an LLM, storage, and orchestration. [Pixelt
 - **[Anthropic](https://github.com/pixeltable/pixelagent/blob/main/blueprints/single_provider/anthropic/README.md)**
 - **[OpenAI](https://github.com/pixeltable/pixelagent/blob/main/blueprints/single_provider/openai/README.md)**
 - **[AWS Bedrock](https://github.com/pixeltable/pixelagent/blob/main/blueprints/single_provider/bedrock/README.md)** 
-- **[Multiprovider](https://github.com/pixeltable/pixelagent/tree/main/blueprints/multi_provider/README.md)**
+- **[Multi-provider](https://github.com/pixeltable/pixelagent#readme)** - `pip install pixelagent` gives you all four providers; see the Quick Start above.
 
 ## Plug-and-Play Extensions 
 

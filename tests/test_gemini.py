@@ -1,63 +1,55 @@
 import os
-import pytest
 
 import pixeltable as pxt
+import pytest
+
 from pixelagent.gemini import Agent
+
+requires_key = pytest.mark.skipif(
+    not os.getenv("GEMINI_API_KEY"), reason="GEMINI_API_KEY not set"
+)
 
 
 @pxt.udf
 def weather(city: str) -> str:
-    """
-    Returns the weather in a given city.
-    """
+    """Returns the weather in a given city."""
     return f"The weather in {city} is sunny."
 
 
-@pytest.mark.skipif(
-    not os.getenv("GEMINI_API_KEY"), reason="GEMINI_API_KEY not set"
-)
+@pytest.mark.live
+@requires_key
+@pytest.mark.gemini
+@pytest.mark.chat
 def test_gemini_agent_chat():
     """Test basic chat functionality with Gemini agent."""
     agent = Agent(
-        name="test_gemini_agent",
+        name="gemini_chat_assistant",
         system_prompt="You're a helpful assistant.",
         reset=True,
     )
-    
-    # Test basic chat
+
     response = agent.chat("Hi, how are you?")
     assert isinstance(response, str)
     assert len(response) > 0
-    
-    # Test memory functionality
+
     response2 = agent.chat("What was my last question?")
     assert isinstance(response2, str)
     assert len(response2) > 0
 
 
-@pytest.mark.skipif(
-    not os.getenv("GEMINI_API_KEY"), reason="GEMINI_API_KEY not set"
-)
+@pytest.mark.live
+@requires_key
+@pytest.mark.gemini
+@pytest.mark.tool_calling
 def test_gemini_agent_tools():
     """Test tool calling functionality with Gemini agent."""
     agent = Agent(
-        name="test_gemini_tools",
+        name="gemini_tools_assistant",
         system_prompt="You're my assistant.",
         tools=pxt.tools(weather),
         reset=True,
     )
-    
-    # Test tool call
+
     response = agent.tool_call("Get weather in San Francisco")
     assert isinstance(response, str)
     assert "San Francisco" in response or "sunny" in response
-
-
-if __name__ == "__main__":
-    # Simple standalone test
-    try:
-        test_gemini_agent_chat()
-        test_gemini_agent_tools()
-        print("✅ All Gemini agent tests passed!")
-    except Exception as e:
-        print(f"❌ Test failed: {e}")
