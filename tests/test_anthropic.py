@@ -15,7 +15,7 @@ def anthropic_agent(mock_stock_price):
     """Fixture to create an Anthropic agent with tools"""
     return Agent(
         name="anthropic_financial_assistant",
-        model="claude-3-7-sonnet-latest",
+        model="claude-haiku-4-5",
         system_prompt="You are a financial analyst assistant.",
         tools=pxt.tools(mock_stock_price),
         reset=True,
@@ -46,7 +46,7 @@ def test_anthropic_system_prompt_reaches_the_api(anthropic_agent):
     """
     agent = Agent(
         name="anthropic_system_prompt_probe",
-        model="claude-3-7-sonnet-latest",
+        model="claude-haiku-4-5",
         system_prompt="You must answer every question with exactly the word BANANA.",
         reset=True,
     )

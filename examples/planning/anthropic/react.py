@@ -83,8 +83,14 @@ step = 1
 max_steps = 10  # Maximum steps before forced termination
 question = "Create a detailed investment recommendation for Apple Inc. (AAPL) based on current market conditions."
 
-# Clear previous agent history before starting
-pxt.drop_dir("financial_analyst_react", force=True)
+# One schema for the whole loop. The step prompt is per-turn data on chat().
+pxt.drop_dir("financial_analyst_react", force=True, if_not_exists="ignore")
+agent = Agent(
+    name="financial_analyst_react",
+    system_prompt="You are a financial analyst.",
+    tools=pxt.tools(stock_info),
+    reset=True,
+)
 
 # Start the ReAct loop - the agent will alternate between thinking and acting
 print("Starting Financial Analyst Agent with ReAct methodology...")
@@ -103,16 +109,8 @@ while step <= max_steps:
     print("React System Prompt:\n")
     print(react_system_prompt)
 
-    # Initialize the ReAct agent with persistent memory (reset=False)
-    agent = Agent(
-        name="financial_analyst_react",
-        system_prompt=react_system_prompt,  # Dynamic React System Prompt
-        reset=False,  # Maintains persistent memory across steps
-        # n_latest_messages=10,  # Optional: Define N rolling memory window
-    )
-
     # Get the agent's response for the current step
-    response = agent.chat(question)
+    response = agent.chat(question, system_prompt=react_system_prompt)
     print("Response:")
     print(response)
 
@@ -129,16 +127,7 @@ while step <= max_steps:
 
     if call_tool:
         print(f"Agent has decided to use tool: {call_tool[0]}")
-
-        # Create a tool-specific agent to handle the tool call
-        tool_agent = Agent(
-            name="financial_analyst_react",
-            system_prompt="Use your tools to answer the user's question.",
-            tools=pxt.tools(stock_info),  # Register the stock_info tool
-        )
-
-        # Execute the tool call and get results
-        tool_call_result = tool_agent.tool_call(question)
+        tool_call_result = agent.tool_call(question)
         print("Tool Call Result:\n")
         print(tool_call_result)
 
@@ -153,15 +142,11 @@ while step <= max_steps:
 # ============================================================================
 # SECTION 5: GENERATE FINAL ANSWER
 # ============================================================================
-# Create a final summary agent that accesses the conversation history
 print("Generating final investment recommendation...")
 
-summary_agent = Agent(
-    name="financial_analyst_react",  # Same agent name to access history
+final_answer = agent.chat(
+    question,
     system_prompt="Answer the user's question. Use your previous chat history to answer the question.",
 )
-
-# Generate the final comprehensive answer
-final_answer = summary_agent.chat(question)
 print("Final Investment Recommendation:")
 print(final_answer)

@@ -37,11 +37,11 @@ We see agents as the intersection of an LLM, storage, and orchestration. [Pixelt
 ## Build your own agent framework: 
 
 - **Data Orchestration and Storage**: Built on Pixeltable's data infrastructure
-- **Native Multimodal**: Built-in support for text, images, audio and video
+- **Native Multimodal**: `chat()` takes text and an image
 - **Declarative Model**: A type-safe python framework
 - **Model agnostic**: Extensible to multiple providers 
-- **Observability**: Complete traceability with automatic logging of messages, tool calls, and performance metrics
-- **Agentic Extensions**: Add reasoning, reflection, memory, knowledge, and team workflows.
+- **Observability**: Messages and tool calls are stored in tables
+- **Agentic Extensions**: Examples for reasoning, reflection, and memory
 
 ## Use with Cursor, Windsurf, Cline
 
@@ -51,7 +51,7 @@ Install the package and point your editor at it:
 pip install pixelagent
 ```
 
-All four providers ship in the package, so an agent is the Quick Start above:
+All four providers ship in the package:
 
 ```python
 from pixelagent.openai import Agent   # or .anthropic, .bedrock, .gemini
@@ -75,10 +75,8 @@ Transform your agent blueprint into a distributable package on PyPI, extending t
 ### Installation
 
 ```bash
-pip install pixelagent
-# Install provider-specific dependencies
-pip install anthropic  # For Claude models
-pip install openai     # For GPT models
+pip install "pixeltable>=0.7.15,<0.8" "pixelagent[openai]"
+# or pixelagent[anthropic], pixelagent[gemini], pixelagent[bedrock]
 ```
 
 ### Quick Start
@@ -100,24 +98,28 @@ print(response)
 ### Adding Tools
 
 ```python
+# tools.py — Pixeltable stores a UDF by its import path, so it lives in a module.
 import pixeltable as pxt
-from pixelagent.anthropic import Agent
 import yfinance as yf
 
-# Define a tool as a UDF
-# In a module, e.g. tools.py -- pixeltable rejects a @pxt.udf defined in a
-# script's global namespace, because it must be importable by name.
+
 @pxt.udf
 def stock_price(ticker: str) -> dict:
     """Get stock information for a ticker symbol"""
     stock = yf.Ticker(ticker)
     return stock.info
+```
 
-# Create agent with tool
+```python
+import pixeltable as pxt
+from pixelagent.anthropic import Agent
+
+from tools import stock_price
+
 agent = Agent(
     name="financial_assistant",
     system_prompt="You are a financial analyst assistant.",
-    tools=pxt.tools(stock_price)
+    tools=pxt.tools(stock_price),
 )
 
 # Use tool calling
@@ -184,9 +186,7 @@ def extract_section(text, section_name):
 
 
 # One agent, built once. The system prompt is per-turn data, so a step that
-# needs a different prompt overrides it on the call rather than rebuilding the
-# agent -- which is what this example used to do, and which now raises
-# SchemaConflict if the model or toolset differs.
+# needs a different prompt passes it to chat().
 agent = Agent(
     name="financial_planner",
     system_prompt="You are a financial analyst.",
@@ -222,30 +222,23 @@ Check out our [tutorials](examples/) for more examples including reflection loop
 
 ## Migrating from 0.1.x
 
-0.2.0 runs on Pixeltable 0.7.6. On 0.7.3+ every 0.1.x agent was broken: a
-text-only `chat()` raised `expected non-None value`, and the Anthropic agent
-could not be constructed at all. Upgrade with `pip install -U pixelagent`.
+0.2.0 requires Pixeltable >= 0.7.15, < 0.8 and Python 3.11+. Upgrade with
+`pip install -U "pixeltable>=0.7.15,<0.8" pixelagent`.
 
-Four things changed for callers:
+What changed for callers:
 
-- **Python 3.11+ is required.** Pixeltable dropped 3.10 in 0.7.2.
-- **Rebuilding an agent under the same name with a different `model` or
-  `tools` now raises `SchemaConflict`.** Previously the new argument was
-  silently discarded and the agent kept using the old model while reporting
-  the new one. Pass `reset=True` to rebuild, or use a different name.
-- **`system_prompt`, `model_kwargs`, `max_tokens` and `n_latest_messages` are
-  per-turn data**, so `chat()` takes them as overrides:
-  `agent.chat(msg, system_prompt="...")`. Varying a prompt no longer needs a
-  second agent.
-- **`chat()` gained `conversation_id`** (default `"default"`), so one agent
-  can hold several separate threads.
+- **A different `model` updates the chat pipeline.** Existing rows keep their
+  previous responses. `reset=True` drops the directory and rebuilds it.
+  `SchemaConflict` is raised when Pixeltable refuses the edit, for example a
+  toolset or column type it cannot reconcile.
+- **`chat()` takes `system_prompt`, `model_kwargs`, `max_tokens`, and
+  `conversation_id`.** `n_latest_messages` is a constructor argument. The
+  history window is fixed when the agent is built.
+- **Memory rows carry `conversation_id`** (default `"default"`), so one agent
+  can hold several threads. The agent table also stores `system_prompt`,
+  `model_kwargs`, `max_tokens`, `n_latest`, and `image`.
 
-`Agent(...)`, `.chat()`, `.tool_call()` and the `<name>.memory` / `<name>.agent`
-tables are otherwise unchanged.
-
-Two bugs are fixed that needed no API change: a failed turn no longer leaves an
-unanswered message in memory, and `chat()` no longer re-queries the row it just
-inserted.
+A failed turn leaves memory empty. `chat()` reads the reply from the insert.
 
 
 ## Tutorials and Examples

@@ -3,6 +3,7 @@ from typing import Optional
 import pixeltable as pxt
 
 from ..core.base import BaseAgent
+from ..core.limits import openai_model_kwargs
 from ..core.spec import ProviderSpec
 from .utils import create_messages
 
@@ -16,7 +17,13 @@ def _call(model, prompt, system_prompt, model_kwargs, max_tokens, tools):
     # `model` is written first deliberately: pixeltable stores a computed
     # column's call as JSONB, and matching the stored kwarg order keeps a
     # re-applied schema a no-op.
-    args = {"model": model, "messages": prompt, "model_kwargs": model_kwargs}
+    args = {
+        "model": model,
+        "messages": prompt,
+        # variant=1 on the follow-up call (tools is None) so it does not share
+        # the dict chat_completions mutates while advertising tools.
+        "model_kwargs": openai_model_kwargs(model_kwargs, max_tokens, 0 if tools is not None else 1),
+    }
     if tools is not None:
         args["tools"] = tools
     return chat_completions(**args)

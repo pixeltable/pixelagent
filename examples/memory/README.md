@@ -73,7 +73,7 @@ memory.add_embedding_index(
 
 # Function to search memory semantically
 def semantic_search(query: str) -> str:
-    sim = memory.user_content.similarity(query, idx="user_content_idx")
+    sim = memory.user_content.similarity(string=query, idx="user_content_idx")
     res = (memory.order_by(sim, asc=False)
            .select(memory.user_content, sim=sim)
            .limit(5)

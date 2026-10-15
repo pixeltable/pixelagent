@@ -3,6 +3,7 @@ from typing import Optional
 import pixeltable as pxt
 
 from ..core.base import BaseAgent
+from ..core.limits import bedrock_inference_config
 from ..core.spec import ProviderSpec
 from .utils import create_messages
 
@@ -20,7 +21,7 @@ def _call(model, prompt, system_prompt, model_kwargs, max_tokens, tools):
         "model_id": model,
         "messages": prompt,
         "system": [{"text": system_prompt}],
-        "inference_config": model_kwargs,
+        "inference_config": bedrock_inference_config(model_kwargs, max_tokens),
     }
     if tools is not None:
         args["tool_config"] = tools

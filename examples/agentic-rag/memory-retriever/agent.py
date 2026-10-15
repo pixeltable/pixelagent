@@ -18,7 +18,7 @@ agent = Agent(
 
 # Get the Agents Memory table and add embedding index to the content
 # This contains conversation history
-memory = pxt.get_table("rolling_memory_agent.memory")
+memory = pxt.get_table("conversational_agent.memory")
 
 memory.add_computed_column(
     user_content=pxtf.string.format(
@@ -40,7 +40,7 @@ def search_memory(query: str) -> list[dict]:
     sim = memory.user_content.similarity(string=query, idx="user_content_idx")
     res = (
         memory.order_by(sim, asc=False)
-        .select(memory.user_content, sim=sim)
+        .select(memory.user_content, score=sim)
         .limit(5)
     )
     return res

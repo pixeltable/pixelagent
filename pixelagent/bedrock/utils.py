@@ -1,4 +1,3 @@
-import base64
 import io
 from typing import Optional
 
@@ -12,19 +11,10 @@ def create_messages(
     current_message: str,
     image: Optional[PIL.Image.Image] = None,
 ) -> list[dict]:
-    """
-    Create a formatted message list for Bedrock Claude models.
-    
-    This function formats the conversation history and current message
-    into the structure expected by Bedrock Claude models.
-    
-    Args:
-        memory_context: List of previous messages from memory
-        current_message: The current user message
-        image: Optional image to include with the message
-        
-    Returns:
-        List of formatted messages for Bedrock Claude
+    """Format history as Bedrock Converse messages.
+
+    Text content is `{"text": ...}`. An image is
+    `{"image": {"format": "jpeg", "source": {"bytes": ...}}}`.
     """
     # Create a copy to avoid modifying the original and format for Bedrock
     messages = []
@@ -55,21 +45,16 @@ def create_messages(
         messages.append({"role": "user", "content": [{"text": current_message}]})
         return messages
 
-    # Convert image to base64
-    bytes_arr = io.BytesIO()
-    image.save(bytes_arr, format="JPEG")
-    b64_bytes = base64.b64encode(bytes_arr.getvalue())
-    b64_encoded_image = b64_bytes.decode("utf-8")
-
-    # Create content blocks with text and image
+    buf = io.BytesIO()
+    image.save(buf, format="JPEG")
+    # Converse converts a PIL image or a media path in source.bytes. Raw JPEG
+    # bytes are already the wire format, so they pass through that walk.
     content_blocks = [
-        {"type": "text", "text": current_message},
+        {"text": current_message},
         {
-            "type": "image",
-            "source": {
-                "type": "base64",
-                "media_type": "image/jpeg",
-                "data": b64_encoded_image,
+            "image": {
+                "format": "jpeg",
+                "source": {"bytes": buf.getvalue()},
             },
         },
     ]
