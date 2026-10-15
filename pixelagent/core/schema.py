@@ -1,14 +1,15 @@
 """
-The agent's schema, declared rather than assembled.
+The agent's schema, written as classes rather than assembled.
 
 Before 0.2.0 an agent was built by a sequence of catalog mutations: create the
 tables, then `add_computed_column(..., if_exists="ignore")` for each stage. That
 has no notion of drift. Re-running it against an existing agent silently kept
 whatever was there, so an agent could report a model it was not using.
 
-Here the tables are declared as `TableModel` classes and reconciled by
-`update_all()`, which diffs them against the catalog and fails loudly on a
-conflict.
+Here the tables are `TableModel` classes, and `update_all()` reconciles them.
+A new model literal updates the computed column. A change Pixeltable refuses
+(a toolset the catalog cannot reconcile, a column type change) raises
+`SchemaConflict`.
 
 The one thing that makes this possible for a library -- as opposed to an
 `app.py`, where the schema is fixed at authoring time -- is that
@@ -39,11 +40,10 @@ def build(
     reset: bool = False,
 ):
     """
-    Declare and reconcile one agent's tables. Returns the model base, whose
+    Create and reconcile one agent's tables. Returns the model base, whose
     tables live under `dir_name`.
 
-    Raises SchemaConflict if `dir_name` already holds an agent built with a
-    different model or toolset.
+    Raises SchemaConflict when `update_all()` refuses the schema.
     """
     if reset:
         pxt.drop_dir(dir_name, force=True, if_not_exists="ignore")

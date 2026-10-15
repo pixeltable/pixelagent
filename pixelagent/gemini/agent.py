@@ -3,6 +3,7 @@ from typing import Optional
 import pixeltable as pxt
 
 from ..core.base import BaseAgent
+from ..core.limits import gemini_config
 from ..core.spec import ProviderSpec
 from .utils import create_content, merge_system_instruction
 
@@ -17,7 +18,9 @@ def _call(model, prompt, system_prompt, model_kwargs, max_tokens, tools):
     args = {
         "model": model,
         "contents": prompt,
-        "config": merge_system_instruction(system_prompt, model_kwargs),
+        "config": gemini_config(
+            merge_system_instruction(system_prompt, model_kwargs), max_tokens
+        ),
     }
     if tools is not None:
         args["tools"] = tools
@@ -26,12 +29,9 @@ def _call(model, prompt, system_prompt, model_kwargs, max_tokens, tools):
 
 SPEC = ProviderSpec(
     name="gemini",
-    default_model="gemini-2.0-flash",
-    # create_content flattens the conversation to a single string, and Gemini's
-    # pixeltable binding has no image parameter, so images are not supported
-    # here. Passing one to chat() is accepted and ignored.
+    default_model="gemini-2.5-flash-lite",
     build_prompt=lambda system_prompt, memory_context, user_message, image: (
-        create_content(memory_context, user_message)
+        create_content(memory_context, user_message, image)
     ),
     call=_call,
     extract=lambda response: response["candidates"][0]["content"]["parts"][0]["text"],

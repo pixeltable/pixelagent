@@ -4,27 +4,26 @@ class PixelagentError(Exception):
 
 class SchemaConflict(PixelagentError):
     """
-    Raised when an agent is re-created under a name that already exists in the
-    catalog with a different `model` or a different toolset.
+    Raised when `update_all()` refuses to reconcile an existing agent.
 
-    Pixeltable requires `model` to be a compile-time literal, and `invoke_tools`
-    compiles the toolset into a column, so neither can vary per row. They are
-    baked into the agent's schema, and changing one is a schema change.
+    `model` is a compile-time literal, so constructing the same name with a
+    different model updates the computed column. `tools` is compiled into its
+    own table. Pixeltable still rejects some of those edits (a toolset it cannot
+    reconcile, a stored column whose type changed). This error is that refusal.
 
-    Before 0.2.0 this was silent: the existing pipeline was kept and the new
-    argument was discarded, so an agent could report a model it was not using.
+    Before 0.2.0 a repeat construction kept the old pipeline and discarded the
+    new argument, so an agent could report a model it was not using.
     """
 
     def __init__(self, name: str, cause: Exception):
         self.agent_name = name
         self.cause = cause
         super().__init__(
-            f"Agent {name!r} already exists with a different model or toolset.\n"
+            f"Agent {name!r} already exists, and Pixeltable refused this schema.\n"
             f"\n{cause}\n\n"
-            f"`model` and `tools` are part of the agent's schema, so they cannot be "
-            f"changed in place. Either pass reset=True to rebuild {name!r} from "
+            f"A different `model` updates the chat pipeline in place; existing rows "
+            f"keep their previous responses. Pass reset=True to rebuild {name!r} from "
             f"scratch (this drops its stored conversation history), or use a "
             f"different name.\n"
-            f"Config that DOES vary per call needs no rebuild: system_prompt, "
-            f"model_kwargs, max_tokens and n_latest_messages are stored per row."
+            f"system_prompt, model_kwargs, and max_tokens are stored on each turn."
         )

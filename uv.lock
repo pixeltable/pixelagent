@@ -1920,6 +1920,20 @@ dependencies = [
     { name = "pixeltable" },
 ]
 
+[package.optional-dependencies]
+anthropic = [
+    { name = "anthropic" },
+]
+bedrock = [
+    { name = "boto3" },
+]
+gemini = [
+    { name = "google-genai" },
+]
+openai = [
+    { name = "openai" },
+]
+
 [package.dev-dependencies]
 dev = [
     { name = "anthropic" },
@@ -1931,26 +1945,34 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "pixeltable", specifier = ">=0.7.6,<0.8" }]
+requires-dist = [
+    { name = "anthropic", marker = "extra == 'anthropic'", specifier = ">=0.40" },
+    { name = "boto3", marker = "extra == 'bedrock'", specifier = ">=1.35" },
+    { name = "google-genai", marker = "extra == 'gemini'", specifier = ">=1.0" },
+    { name = "openai", marker = "extra == 'openai'", specifier = ">=3" },
+    { name = "pixeltable", specifier = ">=0.7.15,<0.8" },
+]
+provides-extras = ["openai", "anthropic", "bedrock", "gemini"]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "anthropic", specifier = ">=0.40" },
     { name = "boto3", specifier = ">=1.35" },
     { name = "google-genai", specifier = ">=1.0" },
-    { name = "openai", specifier = ">=1.0" },
+    { name = "openai", specifier = ">=3" },
     { name = "pytest", specifier = ">=8.0" },
     { name = "ruff", specifier = ">=0.9.7" },
 ]
 
 [[package]]
 name = "pixeltable"
-version = "0.7.6"
+version = "0.7.17"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
     { name = "av" },
     { name = "beautifulsoup4" },
+    { name = "boto3" },
     { name = "cloudpickle" },
     { name = "deprecated" },
     { name = "fasteners" },
@@ -1987,7 +2009,7 @@ dependencies = [
     { name = "tzlocal" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/88/d4/80ccc90bd68601bfb7fa7ec94b2972b82d102c1ddcf322d383bcd1c9b0a3/pixeltable-0.7.6-py3-none-any.whl", hash = "sha256:9e6cdbe54f042b31786bede4a4cd4d68b361b31d75f34ea4e9c415146c901114", size = 1294431, upload-time = "2026-09-09T17:02:40.063Z" },
+    { url = "https://files.pythonhosted.org/packages/1f/c7/2c464536dfcc19d81199776d4c228e9566638bebc9457111621758acb2ff/pixeltable-0.7.17-py3-none-any.whl", hash = "sha256:6986944f1291b55457f11105ec28046b5c38523b81c9fdf123a529c2760581d2", size = 1388882, upload-time = "2026-10-15T21:07:21.259Z" },
 ]
 
 [[package]]

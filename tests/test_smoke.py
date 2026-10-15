@@ -20,9 +20,9 @@ from tools import stock_price_int
 # provider label -> (module, model, name of the column feeding the API call, credential env var)
 PROVIDERS = {
     "openai": ("pixelagent.openai", "gpt-4o-mini", "prompt", "OPENAI_API_KEY"),
-    "anthropic": ("pixelagent.anthropic", "claude-3-7-sonnet-latest", "prompt", "ANTHROPIC_API_KEY"),
+    "anthropic": ("pixelagent.anthropic", "claude-haiku-4-5", "prompt", "ANTHROPIC_API_KEY"),
     "bedrock": ("pixelagent.bedrock", "amazon.nova-pro-v1:0", "prompt", "AWS_ACCESS_KEY_ID"),
-    "gemini": ("pixelagent.gemini", "gemini-2.0-flash", "prompt", "GEMINI_API_KEY"),
+    "gemini": ("pixelagent.gemini", "gemini-2.5-flash-lite", "prompt", "GEMINI_API_KEY"),
 }
 
 ALL = list(PROVIDERS)
@@ -152,7 +152,7 @@ def test_anthropic_system_prompt_is_a_column_not_a_literal():
     agent = Agent(
         name="smoke_anthropic_model_kwargs",
         system_prompt="You are a helpful assistant.",
-        model="claude-3-7-sonnet-latest",
+        model="claude-haiku-4-5",
         reset=True,
     )
     expr = repr(agent.agent.response.col.value_expr)
@@ -191,20 +191,55 @@ def test_schema_converges(provider):
 
 
 @pytest.mark.parametrize("provider", ALL)
-def test_changing_model_raises_clearly(provider):
-    """model is part of the schema, so changing it in place must fail loudly.
+def test_changing_model_updates_the_pipeline(provider):
+    """A new model literal updates the computed column.
 
-    Before 0.2.0 the new model was silently discarded and the agent kept using
-    the old one while reporting the new.
+    Pixeltable 0.7.11+ `update_all()` alters the column instead of rejecting the
+    edit. Before 0.2.0 the new model was discarded and the agent kept calling
+    the old one. Existing rows are left as they are; this agent has none.
     """
-    from pixelagent.core.errors import SchemaConflict
-
     module, model, _, _ = PROVIDERS[provider]
     agent_cls = importlib.import_module(module).Agent
-    name = f"smoke_conflict_{provider}"
+    name = f"smoke_model_update_{provider}"
     agent_cls(name=name, system_prompt="You are a helpful assistant.", model=model, reset=True)
-    with pytest.raises(SchemaConflict, match="reset=True"):
-        agent_cls(name=name, system_prompt="You are a helpful assistant.", model="a-different-model")
+    updated = agent_cls(name=name, system_prompt="You are a helpful assistant.", model="a-different-model")
+    expr = repr(updated.agent.response.col.value_expr)
+    assert "a-different-model" in expr, expr
+    assert model not in expr, expr
+
+
+@pytest.mark.parametrize("provider", ALL)
+def test_adding_tools_reconciles(provider):
+    """Declaring tools on an existing agent creates the tools table."""
+    module, model, _, _ = PROVIDERS[provider]
+    agent_cls = importlib.import_module(module).Agent
+    name = f"smoke_add_tools_{provider}"
+    agent_cls(name=name, system_prompt="You are a helpful assistant.", model=model, reset=True)
+    with_tools = agent_cls(
+        name=name,
+        system_prompt="You are a helpful assistant.",
+        model=model,
+        tools=pxt.tools(stock_price_int),
+    )
+    assert with_tools.tools_table is not None
+    assert "tool_answer" in with_tools.tools_table.columns()
+
+
+_TOKEN_CAP = {
+    "openai": "openai_model_kwargs",
+    "gemini": "gemini_config",
+    "bedrock": "bedrock_inference_config",
+    "anthropic": "max_tokens",
+}
+
+
+@pytest.mark.parametrize("provider", ALL)
+def test_max_tokens_reaches_the_provider_call(provider):
+    """The max_tokens column is an argument of the provider call, for every provider."""
+    agent = make_agent(provider, f"smoke_max_tokens_{provider}")
+    expr = repr(agent.agent.response.col.value_expr)
+    needle = _TOKEN_CAP[provider]
+    assert needle in expr, expr
 
 
 @pytest.mark.parametrize("provider", ALL)
@@ -237,3 +272,32 @@ def test_memory_is_not_written_when_a_turn_fails(provider):
     with pytest.raises(Exception):
         agent.chat("hello")
     assert agent.memory.count() == 0, "a failed turn left an orphaned memory row"
+
+
+@pytest.mark.parametrize("provider", ALL)
+def test_image_prompt_computes(provider):
+    """An image turn formats the prompt locally, before any provider call."""
+    from PIL import Image
+
+    _, _, prompt_col, _ = PROVIDERS[provider]
+    agent = make_agent(provider, f"smoke_image_{provider}")
+    image = Image.new("RGB", (8, 8), color="red")
+    agent.agent.insert(
+        [
+            {
+                "conversation_id": "default",
+                "user_message": "what color is this",
+                "system_prompt": "You are a helpful assistant.",
+                "model_kwargs": None,
+                "max_tokens": 256,
+                "n_latest": 10,
+                "image": image,
+                "timestamp": datetime.datetime.now(),
+            }
+        ],
+        on_error="ignore",
+    )
+    t = agent.agent
+    row = t.select(prompt=t[prompt_col], prompt_err=t[prompt_col].errortype, prompt_msg=t[prompt_col].errormsg).collect()
+    assert row["prompt_err"][0] is None, f"{provider}: {row['prompt_msg'][0]}"
+    assert row["prompt"][0] is not None

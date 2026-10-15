@@ -3,7 +3,7 @@ from pixeltable.functions.huggingface import sentence_transformer
 from pixeltable.functions.openai import chat_completions
 
 # Initialize app structure
-pxt.drop_dir("image_search", force=True)
+pxt.drop_dir("image_search", force=True, if_not_exists="ignore")
 pxt.create_dir("image_search")
 
 # Create images table

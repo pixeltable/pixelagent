@@ -18,16 +18,23 @@ pip install pixelagent openai
 ```
 
 ```python
-from pixelagent.openai import Agent
+# stock_tools.py — a UDF has to live in an importable module.
 import pixeltable as pxt
 import yfinance as yf
 
-# First, define a financial analysis tool
+
 @pxt.udf
 def stock_info(ticker: str) -> dict:
     """Get stock information from Yahoo Finance"""
     stock = yf.Ticker(ticker)
     return stock.info
+```
+
+```python
+from pixelagent.openai import Agent
+import pixeltable as pxt
+
+from stock_tools import stock_info
 
 # Create the main agent with the tool
 tools = pxt.tools(stock_info)
@@ -192,14 +199,11 @@ The reflection pattern works well for:
 Here's a more detailed example showing how to build a comprehensive stock analyzer:
 
 ```python
-# Define additional financial tools
-@pxt.udf
-def market_news(ticker: str) -> list:
-    """Get recent news about the stock"""
-    stock = yf.Ticker(ticker)
-    return stock.news
+# stock_tools.py also defines market_news. pxt.tools() takes each UDF as its own argument.
+from stock_tools import market_news, stock_info
+import pixeltable as pxt
 
-tools = pxt.tools([stock_info, market_news])
+tools = pxt.tools(stock_info, market_news)
 
 main_agent = Agent(
     name="finance_expert",
@@ -239,5 +243,5 @@ analysis = reflection_loop(
 ## Next Steps
 
 1. Try modifying the example code with different tools
-2. Experiment with different reflection criteria
+2. Try different reflection criteria
 3. Adjust max_iterations to find the right balance

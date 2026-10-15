@@ -56,7 +56,7 @@ print(memory.collect())
 
 # Define a simple weather tool as a user-defined function (UDF)
 
-# Add tool to our exisitng agent with custom system prompt instructions
+# update_all() adds the tools table to this agent. The chat history stays.
 agent = Agent(
     name="openai_agent",
     system_prompt="Use your tools to answer the users questions.",

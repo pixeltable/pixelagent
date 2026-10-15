@@ -12,7 +12,7 @@ class BaseAgent:
     """
     An agent with persistent memory and tool execution, backed by Pixeltable.
 
-    The schema is declared in pixelagent/core/schema.py and reconciled on
+    The schema lives in pixelagent/core/schema.py and is reconciled on
     construction; this class is the Python facade over it. A turn is a row:
     `chat()` inserts one and reads back what the pipeline computed.
 
@@ -43,8 +43,9 @@ class BaseAgent:
         Args:
             name: unique name for the agent; also its Pixeltable directory
             system_prompt: system prompt guiding the model's behaviour
-            model: the model to call. Part of the schema, so changing it for an
-                existing name raises SchemaConflict (pass reset=True instead).
+            model: the model to call. Part of the schema. Constructing the same
+                name with a different model updates the computed column; existing
+                rows keep their previous responses.
             n_latest_messages: how many recent messages to include as context;
                 None for the whole conversation
             tools: optional tools for function calling. Also part of the schema.

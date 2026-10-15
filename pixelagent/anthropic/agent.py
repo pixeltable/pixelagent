@@ -28,7 +28,7 @@ def _call(model, prompt, system_prompt, model_kwargs, max_tokens, tools):
 
 SPEC = ProviderSpec(
     name="anthropic",
-    default_model="claude-3-5-sonnet-latest",
+    default_model="claude-haiku-4-5",
     # Anthropic keeps the system prompt out of the message list, so the
     # system_prompt column is dropped here and travels via merge_system.
     build_prompt=lambda system_prompt, memory_context, user_message, image: (

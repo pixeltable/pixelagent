@@ -2,7 +2,7 @@ import pixeltable as pxt
 from pixeltable.functions.openai import embeddings
 
 # Initialize app structure
-pxt.drop_dir("customer_feedback", force=True)
+pxt.drop_dir("customer_feedback", force=True, if_not_exists="ignore")
 pxt.create_dir("customer_feedback")
 
 # Create reviews table

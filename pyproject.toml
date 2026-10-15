@@ -30,8 +30,14 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "pixeltable>=0.7.6,<0.8",
+    "pixeltable>=0.7.15,<0.8",
 ]
+
+[project.optional-dependencies]
+openai = ["openai>=3"]
+anthropic = ["anthropic>=0.40"]
+bedrock = ["boto3>=1.35"]
+gemini = ["google-genai>=1.0"]
 
 [project.urls]
 homepage = "https://pixeltable.com/"
@@ -43,7 +49,7 @@ dev = [
     "pytest>=8.0",
     "ruff>=0.9.7",
     # Provider SDKs: the keyless smoke suite imports all four agent modules.
-    "openai>=1.0",
+    "openai>=3",
     "anthropic>=0.40",
     "boto3>=1.35",
     "google-genai>=1.0",
