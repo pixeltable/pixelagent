@@ -1,13 +1,58 @@
+import asyncio
+import base64
+import io
+import json
 import os
 
+import httpx
 import pixeltable as pxt
+import pixeltable.functions.gemini as pxt_gemini
 import pytest
+from google import genai
+from google.genai import types
+from PIL import Image
 
 from pixelagent.gemini import Agent
 
 requires_key = pytest.mark.skipif(
     not os.getenv("GEMINI_API_KEY"), reason="GEMINI_API_KEY not set"
 )
+
+
+@pytest.mark.parametrize("mode", ["RGB", "RGBA", "LA", "P", "CMYK"])
+def test_gemini_image_request(monkeypatch: pytest.MonkeyPatch, mode: str) -> None:
+    """Image turns reach the SDK with valid PNG bytes and preserve transparency."""
+    image = Image.new("RGBA", (8, 8), color=(255, 0, 0, 64)).convert(mode)
+    requests = []
+
+    def respond(request: httpx.Request) -> httpx.Response:
+        requests.append(json.loads(request.content))
+        return httpx.Response(200, json={
+            "candidates": [{"content": {"role": "model", "parts": [{"text": "Red."}]}}],
+        })
+
+    client = genai.Client(
+        api_key="test-placeholder",
+        http_options=types.HttpOptions(
+            httpx_async_client=httpx.AsyncClient(transport=httpx.MockTransport(respond)),
+        ),
+    )
+    monkeypatch.setattr(pxt_gemini, "_genai_client", lambda: client)
+    try:
+        agent = Agent(name="gemini_image_request", system_prompt="Be helpful.", reset=True)
+        assert agent.chat("What color is this?", image=image) == "Red."
+    finally:
+        asyncio.run(client.aio.aclose())
+        client.close()
+
+    assert len(requests) == 1
+    blob = requests[0]["contents"][0]["parts"][0]["inlineData"]
+    assert blob["mimeType"] == "image/png"
+    with Image.open(io.BytesIO(base64.urlsafe_b64decode(blob["data"]))) as decoded:
+        assert decoded.format == "PNG"
+        assert decoded.size == image.size
+        assert decoded.convert("RGBA").tobytes() == image.convert("RGBA").tobytes()
+    assert agent.memory.count() == 2
 
 
 @pxt.udf
