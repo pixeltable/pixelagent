@@ -15,7 +15,8 @@ def create_content(
     """Flatten the conversation to Gemini content parts.
 
     Text-only turns are a one-element list. An image turn prepends an
-    `inline_data` part. `generate_content` accepts that list as `contents`.
+    `inline_data` PNG part, preserving transparency. `generate_content` accepts
+    that list as `contents`.
     """
     context = ""
     for msg in memory_context:
@@ -26,10 +27,11 @@ def create_content(
         return [context]
 
     buf = io.BytesIO()
-    image.save(buf, format="JPEG")
+    # PNG preserves transparency; RGBA also handles modes such as CMYK that PNG cannot encode directly.
+    image.convert("RGBA").save(buf, format="PNG")
     encoded = base64.b64encode(buf.getvalue()).decode("ascii")
     return [
-        {"inline_data": {"mime_type": "image/jpeg", "data": encoded}},
+        {"inline_data": {"mime_type": "image/png", "data": encoded}},
         context,
     ]
 

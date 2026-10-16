@@ -2,6 +2,7 @@
 
 Each provider spells the cap differently, and a caller who already set it in
 `chat_kwargs` / `tool_kwargs` keeps that value.
+OpenAI defaults to `max_completion_tokens`, which also supports reasoning models.
 
 `openai_model_kwargs` is non-deterministic on purpose. `chat_completions`
 writes `tools` into the dict it receives, so a cached dict would leak that
@@ -21,7 +22,7 @@ def openai_model_kwargs(options: Optional[dict], max_tokens: int, variant: int =
     # chat_completions mutates.
     merged = dict(options or {})
     if "max_tokens" not in merged and "max_completion_tokens" not in merged:
-        merged["max_tokens"] = max_tokens
+        merged["max_completion_tokens"] = max_tokens
     return merged
 
 
